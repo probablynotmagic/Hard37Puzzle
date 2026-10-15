@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The 37 Box — Black-Box Puzzle</title>
+<style>
+  :root{
+    --bg:#101318;
+    --cab1:#2b313a;
+    --cab2:#1b1f26;
+    --edge:#0b0d10;
+    --ink:#e8ecf1;
+    --dim:#9aa3ad;
+    --led:#ffb02e;
+    --led-dim:#5a3d10;
+    --red:#d63a3a;
+    --red-d:#8f1f1f;
+    --blue:#2f7fe0;
+    --blue-d:#1a4b96;
+    --good:#37d67a;
+    --bad:#ff4d4d;
+    --panel:#14181e;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:radial-gradient(1200px 700px at 50% -10%, #232b36 0%, var(--bg) 60%) fixed, var(--bg);
+    color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+    min-height:100vh;
+    padding:16px;
+  }
+  .cabinet{
+    position:relative;
+    max-width:600px;
+    margin:0 auto;
+    background:linear-gradient(180deg,var(--cab1),var(--cab2));
+    border:1px solid #000;
+    border-radius:14px;
+    box-shadow:0 20px 60px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.12);
+    padding:18px 18px 20px;
+  }
+  .rivet{position:absolute;width:10px;height:10px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #cfd6de, #5a626c 60%, #222);
+    box-shadow:inset 0 -1px 2px rgba(0,0,0,.7)}
+  .rivet.tl{top:8px;left:8px}.rivet.tr{top:8px;right:8px}
+  .rivet.bl{bottom:8px;left:8px}.rivet.br{bottom:8px;right:8px}
+  h1{font-size:1.25rem;letter-spacing:.18em;margin:6px 0 2px;text-align:center}
+  .sub{text-align:center;color:var(--dim);font-size:.85rem;margin:0 0 4px}
+  .objective{
+    text-align:center;font-size:.95rem;margin:8px auto 14px;max-width:46ch;
+    background:rgba(0,0,0,.35);border:1px solid #000;border-radius:8px;padding:8px 10px;
+  }
+  .objective b{color:var(--led)}
+  .solution-link{text-align:center;margin:0 auto 14px}
+  .solution-link a{color:var(--led);font-size:.9rem;letter-spacing:.06em}
+  .solution-link a:hover{color:#fff}
+  .toprow{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:stretch;margin-bottom:14px}
+  .display-unit{
+    background:#050607;border:2px solid #000;border-radius:10px;
+    box-shadow:inset 0 0 24px rgba(0,0,0,.9), inset 0 0 6px #000;
+    display:flex;align-items:center;justify-content:center;min-height:96px;
+  }
+  .display{
+    font-family:"Courier New",ui-monospace,monospace;
+    font-size:clamp(3rem,18vw,4.5rem);font-weight:bold;letter-spacing:.12em;
+    color:var(--led);text-shadow:0 0 8px rgba(255,176,46,.8),0 0 28px rgba(255,176,46,.35);
+    line-height:1;user-select:none;
+  }
+  .display.good{color:var(--good);text-shadow:0 0 8px rgba(55,214,122,.9),0 0 28px rgba(55,214,122,.4)}
+  .display.bad{color:var(--bad);text-shadow:0 0 8px rgba(255,77,77,.9),0 0 28px rgba(255,77,77,.4)}
+  .side{display:flex;flex-direction:column;gap:8px;min-width:170px}
+  .budget{
+    background:#000;border:1px solid #333;border-radius:8px;padding:8px 10px;
+    font-size:.8rem;letter-spacing:.08em;text-align:center;
+  }
+  .budget b{display:block;font-size:1.6rem;color:var(--ink)}
+  .budget.low b{color:var(--bad)}
+  .status{
+    background:rgba(0,0,0,.4);border:1px solid #000;border-radius:8px;padding:8px 10px;
+    font-size:.85rem;min-height:56px;
+  }
+  .status.win{border-color:var(--good);color:var(--good)}
+  .status.lose{border-color:var(--bad);color:var(--bad)}
+  .controls{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .card{background:rgba(0,0,0,.35);border:1px solid #000;border-radius:10px;padding:12px}
+  .card h2{font-size:.72rem;letter-spacing:.2em;color:var(--dim);margin:0 0 10px;text-align:center}
+  .card.full{grid-column:1 / -1}
+  /* Dial */
+  .dial-wrap{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap}
+  .dial-face{
+    position:relative;width:118px;height:118px;border-radius:50%;
+    background:radial-gradient(circle at 50% 38%, #3a424d, #171b21 70%);
+    border:2px solid #000;box-shadow:0 4px 10px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.15);
+    flex:none;
+  }
+  .tick{position:absolute;left:50%;top:50%;width:2px;height:10px;background:#7d8791;transform-origin:50% 0}
+  .tick span{position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:.62rem;color:var(--dim)}
+  .pointer{
+    position:absolute;left:calc(50% - 2px);top:8px;width:4px;height:44px;border-radius:2px;
+    background:var(--led);box-shadow:0 0 6px rgba(255,176,46,.8);
+    transform-origin:50% 51px;
+  }
+  .hub{position:absolute;left:calc(50% - 12px);top:calc(50% - 12px);width:24px;height:24px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%,#d5dbe2,#666 60%,#1a1a1a);border:1px solid #000}
+  .dial-btns{display:grid;grid-template-columns:repeat(3,44px);gap:8px}
+  .dial-btns button{
+    min-height:44px;min-width:44px;border-radius:8px;border:1px solid #000;cursor:pointer;
+    background:linear-gradient(180deg,#3a424d,#22272e);color:var(--ink);font-size:1rem;font-weight:bold;
+  }
+  .dial-btns button[aria-pressed="true"]{outline:2px solid var(--led);background:linear-gradient(180deg,#4d5865,#2a3038)}
+  /* Push buttons */
+  .pushrow{display:flex;gap:12px;justify-content:center}
+  .push{
+    flex:1;min-height:64px;border-radius:12px;border:1px solid #000;cursor:pointer;
+    font-size:1.05rem;font-weight:800;letter-spacing:.12em;color:#fff;
+    text-shadow:0 1px 2px rgba(0,0,0,.6);
+    box-shadow:0 5px 0 rgba(0,0,0,.55), 0 8px 16px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.35);
+    transition:transform .06s ease, box-shadow .06s ease;
+    touch-action:manipulation;
+  }
+  .push:active,.push.hit{transform:translateY(4px);box-shadow:0 1px 0 rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.25)}
+  .push.red{background:linear-gradient(180deg,#e65252,var(--red) 55%,var(--red-d))}
+  .push.blue{background:linear-gradient(180deg,#5aa0ef,var(--blue) 55%,var(--blue-d))}
+  .push:disabled{filter:grayscale(.7) brightness(.6);cursor:not-allowed;transform:none}
+  /* Lever */
+  .lever-wrap{display:flex;align-items:center;justify-content:center;gap:14px}
+  .lever-track{position:relative;width:46px;height:120px;border-radius:23px;background:#050607;
+    border:2px solid #000;box-shadow:inset 0 0 12px #000}
+  .lever-slot{position:absolute;left:50%;top:10px;bottom:10px;width:6px;transform:translateX(-50%);
+    background:#22272e;border-radius:3px}
+  .lever-knob{position:absolute;left:50%;top:8px;width:34px;height:34px;border-radius:50%;
+    transform:translateX(-50%);background:radial-gradient(circle at 35% 30%,#e6b34d,#8a5f14 65%,#2b2008);
+    border:2px solid #000;box-shadow:0 3px 8px rgba(0,0,0,.6);transition:top .18s ease}
+  .lever-track.pulled .lever-knob{top:76px}
+  #leverBtn{min-height:64px;min-width:150px;border-radius:12px;border:1px solid #000;cursor:pointer;
+    background:linear-gradient(180deg,#4d5865,#2a3038);color:var(--ink);font-weight:800;letter-spacing:.12em}
+  #leverBtn:disabled{filter:grayscale(.7) brightness(.6);cursor:not-allowed}
+  /* Reset */
+  #resetBtn{
+    width:100%;min-height:48px;border-radius:10px;border:1px solid #000;cursor:pointer;
+    background:linear-gradient(180deg,#3a424d,#22272e);color:var(--ink);
+    font-weight:800;letter-spacing:.2em;
+  }
+  #resetBtn:active{transform:translateY(2px)}
+  button:focus-visible{outline:3px solid #fff;outline-offset:2px}
+  .dial-btns button:disabled,#leverBtn:disabled,.push:disabled{opacity:.55}
+  .hint{color:var(--dim);font-size:.78rem;text-align:center;margin-top:8px}
+  .sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+  /* Dev panel (hidden unless ?dev / #dev / Alt+Shift+D) */
+  #devPanel{background:#0a0d11;border:1px dashed #4d5865;border-radius:10px;padding:12px;margin-top:14px;font-size:.82rem}
+  #devPanel table{border-collapse:collapse;width:100%}
+  #devPanel td,#devPanel th{border:1px solid #2a3038;padding:4px 8px;text-align:left}
+  #devPanel .pass{color:var(--good)} #devPanel .fail{color:var(--bad)}
+  @media (max-width:480px){
+    .toprow{grid-template-columns:1fr}
+    .side{min-width:0}
+    .controls{grid-template-columns:1fr}
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{animation:none !important;transition:none !important}
+  }
+</style>
+</head>
+<body>
+<main class="cabinet" aria-label="The 37 Box puzzle machine">
+  <span class="rivet tl" aria-hidden="true"></span><span class="rivet tr" aria-hidden="true"></span>
+  <span class="rivet bl" aria-hidden="true"></span><span class="rivet br" aria-hidden="true"></span>
+
+  <h1>THE 37 BOX</h1>
+  <p class="sub">MYSTERY MECHANISM &middot; MK-37 &middot; EXPERIMENTAL EQUIPMENT</p>
+
+  <p class="objective">Objective: make the display show <b>37</b> in <b>6 actions</b> or fewer.
+    Dial, RED, BLUE and LEVER each cost 1 action. RESET is free. No manual included &mdash; experiment.</p>
+  <p class="solution-link"><a href="narration_37_sonnet55.html">Click here for the Solution!</a></p>
+
+  <div class="toprow">
+    <div class="display-unit" aria-label="Numeric display">
+      <div class="display" id="display" role="status" aria-label="Display value">00</div>
+    </div>
+    <div class="side">
+      <div class="budget" id="budgetBox">ACTIONS REMAINING<b id="actionsLeft">6</b></div>
+      <div class="status" id="statusMsg">Machine ready. Display reads 00.</div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <section class="card" aria-label="Rotary dial">
+      <h2>DIAL &middot; 0&ndash;5</h2>
+      <div class="dial-wrap">
+        <div class="dial-face" aria-hidden="true" id="dialFace">
+          <div class="pointer" id="pointer"></div>
+          <div class="hub"></div>
+        </div>
+        <div class="dial-btns" role="group" aria-label="Dial positions 0 to 5" id="dialBtns">
+          <button type="button" data-dial="0" aria-pressed="true" aria-label="Set dial to 0">0</button>
+          <button type="button" data-dial="1" aria-pressed="false" aria-label="Set dial to 1">1</button>
+          <button type="button" data-dial="2" aria-pressed="false" aria-label="Set dial to 2">2</button>
+          <button type="button" data-dial="3" aria-pressed="false" aria-label="Set dial to 3">3</button>
+          <button type="button" data-dial="4" aria-pressed="false" aria-label="Set dial to 4">4</button>
+          <button type="button" data-dial="5" aria-pressed="false" aria-label="Set dial to 5">5</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" aria-label="Buttons">
+      <h2>BUTTONS</h2>
+      <div class="pushrow">
+        <button type="button" class="push red" id="redBtn" aria-label="Press the red button">RED</button>
+        <button type="button" class="push blue" id="blueBtn" aria-label="Press the blue button">BLUE</button>
+      </div>
+    </section>
+
+    <section class="card" aria-label="Lever">
+      <h2>LEVER</h2>
+      <div class="lever-wrap">
+        <div class="lever-track" id="leverTrack" aria-hidden="true">
+          <div class="lever-slot"></div><div class="lever-knob"></div>
+        </div>
+        <button type="button" id="leverBtn" aria-label="Pull the lever">PULL<br>LEVER</button>
+      </div>
+    </section>
+
+    <section class="card" aria-label="Reset">
+      <h2>RESET &middot; FREE</h2>
+      <button type="button" id="resetBtn" aria-label="Reset the machine (free, no confirmation)">RESET</button>
+      <p class="hint">Reset restores a fresh attempt instantly. It never costs an action.</p>
+    </section>
+
+  </div>
+
+  <section id="devPanel" hidden aria-label="Developer tests">
+    <h2 style="font-size:.75rem;letter-spacing:.2em;color:var(--dim)">DEVELOPER TESTS (HIDDEN)</h2>
+    <p style="color:var(--dim)">Offline self-check. Uses fresh simulated states only; never touches the live game.</p>
+    <button type="button" id="runTestsBtn">RUN TESTS</button>
+    <span id="testSummary"></span>
+    <div style="max-height:260px;overflow:auto;margin-top:8px"><table id="testTable" aria-label="Test results"></table></div>
+  </section>
+</main>
+
+<div id="live" class="sr-only" aria-live="polite"></div>
+
+<script>
+'use strict';
+/* =====================================================================
+   THE 37 BOX — single-file implementation.
+   State model (internal; armed/jam state never shown in the UI):
+     V            current numeric value (integer, initially 0)
+     d            dial position 0-5 (public, initially 0)
+     armed        hidden one-shot doubling flag (initially false)
+     lastButton   'RED' | 'BLUE' | 'NONE' (jam tracking)
+     buttonStreak consecutive identical button presses (jam tracking)
+     lastAction   'RED' | 'BLUE' | 'DIAL' | 'LEVER' | 'NONE'
+     actionsUsed  counted actions 0-6
+     overflow     latch for EE state
+     status       'PLAYING' | 'SUCCESS' | 'OUT_OF_ACTIONS' | 'OVERFLOW'
+   All transitions go through performAction() — UI handlers never
+   reimplement rules. Logic runs synchronously; animations are purely
+   visual and never gate or duplicate state changes.
+   ===================================================================== */
+var TARGET = 37;
+var BUDGET = 6;
+var MAXV = 99;
+
+function freshState() {
+  return {
+    V: 0, d: 0, armed: false,
+    lastButton: 'NONE', buttonStreak: 0, lastAction: 'NONE',
+    actionsUsed: 0, overflow: false, status: 'PLAYING'
+  };
+}
+
+function resetInto(st) {
+  var f = freshState();
+  for (var k in f) { st[k] = f[k]; }
+  return st;
+}
+
+/* Two-digit display string. Overflow renders as EE (handled by displayFor). */
+function fmt(v) {
+  var s = String(v);
+  return s.length >= 2 ? s : '0' + s;
+}
+
+function displayFor(st) {
+  if (st.status === 'OVERFLOW') return 'EE';
+  return fmt(st.V);
+}
+
+/* Digit swap treats V as two digits with leading zero, reverses, parses back. */
+function swapDigits(v) {
+  var s = fmt(v);
+  return parseInt(s.charAt(1) + s.charAt(0), 10);
+}
+
+/* Single Blue transformation T(V): 2V+1 on dial 3-5, else max(0, V-3). */
+function blueOnce(V, d) {
+  if (d >= 3) return 2 * V + 1;
+  return Math.max(0, V - 3);
+}
+
+function canAct(st) {
+  return st.status === 'PLAYING' && st.actionsUsed < BUDGET;
+}
+
+/* Central state-transition function. Mutates st, returns outcome info used
+   by the event log (observable facts only: jam, eligibility skip, deltas). */
+function performAction(st, type, value) {
+  if (st.status !== 'PLAYING') return { ok: false, reason: 'terminal' };
+  if (st.actionsUsed >= BUDGET) {
+    if (st.status === 'PLAYING') st.status = 'OUT_OF_ACTIONS';
+    return { ok: false, reason: 'budget' };
+  }
+  var prevV = st.V;
+  var jammed = false;
+  var eligible = null; /* BLUE only: true/false; RED/DIAL/LEVER stay null */
+
+  if (type === 'DIAL') {
+    var x = value;
+    if (typeof x !== 'number' || x % 1 !== 0 || x < 0 || x > 5) {
+      return { ok: false, reason: 'bad-dial' };
+    }
+    st.actionsUsed += 1;
+    st.d = x;
+    st.armed = false;               /* dial always disarms, even re-select */
+    st.lastButton = 'NONE';
+    st.buttonStreak = 0;
+    /* V unchanged; cannot overflow */
+    st.lastAction = 'DIAL';
+  } else if (type === 'RED' || type === 'BLUE') {
+    var btn = type;
+    st.actionsUsed += 1;
+    /* --- global jam rule, evaluated BEFORE the normal button effect --- */
+    if (st.lastButton === btn) { st.buttonStreak += 1; }
+    else { st.lastButton = btn; st.buttonStreak = 1; }
+    if (st.buttonStreak >= 3) {
+      jammed = true;
+      /* jammed press: V and armed untouched; still becomes lastAction */
+      st.lastButton = 'NONE';
+      st.buttonStreak = 0;
+      st.lastAction = btn;
+    } else if (type === 'RED') {
+      var inc = st.d + 2;
+      if (st.armed) { st.V += inc + inc; st.armed = false; }
+      else { st.V += inc; }
+      st.lastAction = 'RED';
+    } else {
+      /* BLUE: eligibility reads the ACTUAL previous action (which may
+         itself have been jammed or a no-op — e.g. RED,RED,RED(jam),BLUE
+         is still eligible because lastAction is RED). */
+      var prev = st.lastAction;
+      if (prev === 'RED' || prev === 'LEVER') {
+        eligible = true;
+        if (st.armed) {
+          st.V = blueOnce(st.V, st.d);
+          st.V = blueOnce(st.V, st.d);
+          st.armed = false;
+        } else {
+          st.V = blueOnce(st.V, st.d);
+        }
+      } else {
+        eligible = false; /* action spent, no effect, armed preserved */
+      }
+      st.lastAction = 'BLUE';
+    }
+  } else if (type === 'LEVER') {
+    st.actionsUsed += 1;
+    st.lastButton = 'NONE';
+    st.buttonStreak = 0;
+    if (!st.armed) { st.armed = true; /* V unchanged */ }
+    else { st.V = swapDigits(st.V); st.armed = false; }
+    st.lastAction = 'LEVER';
+  } else {
+    return { ok: false, reason: 'unknown-action' };
+  }
+
+  /* --- terminal checks, strict order: overflow, success, exhaustion --- */
+  var scoring = (type === 'RED' && !jammed) || (type === 'BLUE' && !jammed && eligible === true);
+  if (scoring && st.V > MAXV) {
+    st.overflow = true;
+    st.status = 'OVERFLOW';
+  } else if (st.V === TARGET) {
+    st.status = 'SUCCESS';
+  } else if (st.actionsUsed >= BUDGET) {
+    st.status = 'OUT_OF_ACTIONS';
+  }
+  return { ok: true, jammed: jammed, eligible: eligible, prevV: prevV, newV: st.V };
+}
+
+/* ---------------- observable event-log lines (no hidden causes) -------- */
+var logEntries = [];
+function logEvent(msg) {
+  logEntries.push(msg);
+  if (typeof document !== 'undefined') {
+    var log = document.getElementById('log');
+    if (log) {
+      var li = document.createElement('li');
+      li.textContent = msg;
+      log.appendChild(li);
+      log.scrollTop = log.scrollHeight;
+    }
+  }
+}
+function clearLog() {
+  logEntries = [];
+  if (typeof document !== 'undefined') {
+    var log = document.getElementById('log');
+    if (log) log.innerHTML = '';
+  }
+}
+function describeOutcome(type, value, info, st) {
+  if (type === 'DIAL') return 'Dial set to ' + value + '. Display unchanged.';
+  if (type === 'LEVER') {
+    if (info.newV !== info.prevV) {
+      return 'Lever pulled. Display changed from ' + fmt(info.prevV) + ' to ' + fmt(info.newV) + '.';
+    }
+    return 'Lever pulled. Something clicked inside.';
+  }
+  if (info.jammed) return 'The mechanism jammed. The action was still used.';
+  if (st.status === 'OVERFLOW') return (type === 'RED' ? 'Red' : 'Blue') + ' pressed. The display overloaded.';
+  if (type === 'RED') {
+    return 'Red pressed. Display changed from ' + fmt(info.prevV) + ' to ' + fmt(info.newV) + '.';
+  }
+  /* BLUE */
+  if (info.eligible === false || info.newV === info.prevV) return 'Blue pressed. Nothing happened.';
+  return 'Blue pressed. Display changed from ' + fmt(info.prevV) + ' to ' + fmt(info.newV) + '.';
+}
+
+/* =====================================================================
+   DEVELOPER TESTS — pure logic on fresh states; never touch live game.
+   Covers spec sections 10 (solutions A/B) and 11 (57 mandatory cases).
+   ===================================================================== */
+function runAllTests() {
+  var results = [];
+  function T(name, fn) {
+    try {
+      var r = fn();
+      results.push({ name: name, pass: r === true });
+    } catch (e) {
+      results.push({ name: name, pass: false, error: String(e && e.message || e) });
+    }
+  }
+  function seq(steps) {
+    /* steps: [['RED'],['DIAL',4],...] -> {st, infos} */
+    var st = freshState();
+    var infos = [];
+    for (var i = 0; i < steps.length; i++) {
+      infos.push(performAction(st, steps[i][0], steps[i][1]));
+    }
+    return { st: st, infos: infos };
+  }
+  function inj(o) {
+    var st = freshState();
+    for (var k in o) { st[k] = o[k]; }
+    return st;
+  }
+  var last = function (a) { return a[a.length - 1]; };
+
+  /* ---- Jam behaviour (1-10) ---- */
+  T('01 two consecutive REDs execute normally', function () {
+    var r = seq([['RED'], ['RED']]);
+    return r.st.V === 4 && r.infos[0].ok && r.infos[1].ok && !r.infos[1].jammed;
+  });
+  T('02 third consecutive RED is jammed', function () {
+    var r = seq([['RED'], ['RED'], ['RED']]);
+    return r.infos[2].jammed === true && r.st.V === 4 && r.st.actionsUsed === 3;
+  });
+  T('03 fourth RED starts a new streak and executes', function () {
+    var r = seq([['RED'], ['RED'], ['RED'], ['RED']]);
+    return r.infos[2].jammed === true && r.infos[3].jammed === false && r.st.V === 6;
+  });
+  T('04 third consecutive BLUE is jammed', function () {
+    var r = seq([['BLUE'], ['BLUE'], ['BLUE']]);
+    return r.infos[0].eligible === false && r.infos[1].eligible === false &&
+      r.infos[2].jammed === true && r.st.V === 0;
+  });
+  T('05 dial resets the button streak', function () {
+    var r = seq([['RED'], ['RED'], ['DIAL', 4], ['RED'], ['RED']]);
+    for (var i = 0; i < r.infos.length; i++) { if (r.infos[i].jammed) return false; }
+    return r.st.V === 16; /* 2,4 then dial, then 10,16 */
+  });
+  T('06 lever resets the button streak', function () {
+    var r = seq([['RED'], ['RED'], ['LEVER'], ['RED'], ['RED']]);
+    for (var i = 0; i < r.infos.length; i++) { if (r.infos[i].jammed) return false; }
+    return r.st.V === 10; /* 2,4,arm,8(double 2+2),10 */
+  });
+  T('07 switching RED/BLUE starts a new streak', function () {
+    var r = seq([['RED'], ['BLUE'], ['RED']]);
+    return !r.infos[0].jammed && !r.infos[1].jammed && !r.infos[2].jammed &&
+      r.st.lastButton === 'RED' && r.st.buttonStreak === 1;
+  });
+  T('08 ineligible BLUE still counts towards the streak', function () {
+    var r = seq([['BLUE'], ['BLUE']]);
+    return r.infos[0].eligible === false && r.st.lastButton === 'BLUE' && r.st.buttonStreak === 2;
+  });
+  T('09 jammed press still updates lastAction', function () {
+    var r = seq([['RED'], ['RED'], ['RED']]);
+    return r.infos[2].jammed === true && r.st.lastAction === 'RED';
+  });
+  T('10 jammed press does not change armed (blue and red units)', function () {
+    var s1 = inj({ V: 8, d: 4, armed: true, lastButton: 'BLUE', buttonStreak: 2, lastAction: 'DIAL' });
+    var i1 = performAction(s1, 'BLUE');
+    var okBlue = i1.jammed === true && s1.armed === true && s1.V === 8;
+    var s2 = inj({ V: 10, armed: true, lastButton: 'RED', buttonStreak: 2, lastAction: 'RED' });
+    var i2 = performAction(s2, 'RED');
+    return okBlue && i2.jammed === true && s2.armed === true && s2.V === 10;
+  });
+
+  /* ---- Dial behaviour (11-17) ---- */
+  T('11 dial starts at 0', function () { return freshState().d === 0; });
+  T('12 each dial position 0-5 selectable', function () {
+    for (var x = 0; x <= 5; x++) {
+      var r = seq([['DIAL', x]]);
+      if (!r.infos[0].ok || r.st.d !== x) return false;
+    }
+    return true;
+  });
+  T('13 dial consumes exactly one action', function () {
+    var r = seq([['DIAL', 3]]);
+    return r.st.actionsUsed === 1;
+  });
+  T('14 re-selecting same position still costs an action', function () {
+    var r = seq([['DIAL', 2], ['DIAL', 2]]);
+    return r.st.actionsUsed === 2 && r.st.d === 2;
+  });
+  T('15 dial leaves V unchanged', function () {
+    var r = seq([['RED'], ['DIAL', 5]]);
+    return r.st.V === 2;
+  });
+  T('16 dial disarms the machine', function () {
+    var st = inj({ armed: true });
+    performAction(st, 'DIAL', 3);
+    return st.armed === false;
+  });
+  T('17 dial resets the jam streak', function () {
+    var r = seq([['RED'], ['RED'], ['DIAL', 1], ['RED']]);
+    return r.st.lastButton === 'RED' && r.st.buttonStreak === 1 && !last(r.infos).jammed;
+  });
+
+  /* ---- Red behaviour (18-24) ---- */
+  T('18 red at dial 0 adds 2', function () {
+    var r = seq([['DIAL', 0], ['RED']]);
+    return r.st.V === 2;
+  });
+  T('19 red at dial 4 adds 6', function () {
+    var r = seq([['DIAL', 4], ['RED']]);
+    return r.st.V === 6;
+  });
+  T('20 red at dial 5 adds 7', function () {
+    var r = seq([['DIAL', 5], ['RED']]);
+    return r.st.V === 7;
+  });
+  T('21 armed red at dial 4 adds 12', function () {
+    var r = seq([['DIAL', 4], ['LEVER'], ['RED']]);
+    return r.st.V === 12;
+  });
+  T('22 armed red disarms afterwards', function () {
+    var r = seq([['DIAL', 4], ['LEVER'], ['RED']]);
+    return r.st.armed === false;
+  });
+  T('23 jammed red does not change V', function () {
+    var r = seq([['RED'], ['RED'], ['RED']]);
+    return r.infos[2].jammed === true && r.st.V === 4;
+  });
+  T('24 jammed red does not consume armed', function () {
+    var st = inj({ V: 10, armed: true, lastButton: 'RED', buttonStreak: 2, lastAction: 'RED', d: 0 });
+    var i = performAction(st, 'RED');
+    return i.jammed === true && st.armed === true && st.V === 10;
+  });
+
+  /* ---- Blue behaviour (25-38) ---- */
+  T('25 blue ineligible at start', function () {
+    var r = seq([['BLUE']]);
+    return r.infos[0].ok && r.infos[0].eligible === false && r.st.V === 0;
+  });
+  T('26 blue eligible after RED', function () {
+    var r = seq([['RED'], ['BLUE']]);
+    return last(r.infos).eligible === true;
+  });
+  T('27 blue eligible after LEVER', function () {
+    var r = seq([['LEVER'], ['BLUE']]);
+    return last(r.infos).eligible === true;
+  });
+  T('28 blue ineligible after DIAL', function () {
+    var r = seq([['RED'], ['DIAL', 1], ['BLUE']]);
+    return last(r.infos).eligible === false;
+  });
+  T('29 blue ineligible after BLUE', function () {
+    var r = seq([['RED'], ['BLUE'], ['BLUE']]);
+    return last(r.infos).eligible === false;
+  });
+  T('30 blue dial3: 10 -> 21', function () {
+    var st = inj({ V: 10, d: 3, lastAction: 'RED' });
+    performAction(st, 'BLUE');
+    return st.V === 21;
+  });
+  T('31 blue dial4: 12 -> 25', function () {
+    var st = inj({ V: 12, d: 4, lastAction: 'RED' });
+    performAction(st, 'BLUE');
+    return st.V === 25;
+  });
+  T('32 blue dial2: 10 -> 7', function () {
+    var st = inj({ V: 10, d: 2, lastAction: 'RED' });
+    performAction(st, 'BLUE');
+    return st.V === 7;
+  });
+  T('33 blue dial2: 2 -> 0 (floors at zero)', function () {
+    var st = inj({ V: 2, d: 2, lastAction: 'RED' });
+    performAction(st, 'BLUE');
+    return st.V === 0;
+  });
+  T('34 armed blue applies transformation twice (12 -> 51)', function () {
+    var st = inj({ V: 12, d: 4, armed: true, lastAction: 'RED' });
+    performAction(st, 'BLUE');
+    return st.V === 51;
+  });
+  T('35 armed blue disarms after both applications', function () {
+    var st = inj({ V: 12, d: 4, armed: true, lastAction: 'RED' });
+    performAction(st, 'BLUE');
+    return st.armed === false;
+  });
+  T('36 ineligible blue leaves armed unchanged', function () {
+    var st = inj({ V: 8, d: 4, armed: true, lastAction: 'DIAL' });
+    var i = performAction(st, 'BLUE');
+    return i.eligible === false && st.armed === true && st.V === 8;
+  });
+  T('37 jammed blue leaves armed unchanged', function () {
+    var st = inj({ V: 8, d: 4, armed: true, lastButton: 'BLUE', buttonStreak: 2, lastAction: 'RED' });
+    var i = performAction(st, 'BLUE');
+    return i.jammed === true && st.armed === true && st.V === 8;
+  });
+  T('38 blue after jammed RED stays eligible (prev action RED)', function () {
+    var r = seq([['RED'], ['RED'], ['RED'], ['BLUE']]);
+    var b = last(r.infos);
+    return r.infos[2].jammed === true && b.jammed === false && b.eligible === true && r.st.V === 1;
+  });
+
+  /* ---- Lever behaviour (39-45) ---- */
+  T('39 first lever arms without changing V', function () {
+    var r = seq([['LEVER']]);
+    return r.st.armed === true && r.st.V === 0;
+  });
+  T('40 second lever swaps digits and disarms', function () {
+    var st = inj({ V: 17, armed: true, lastAction: 'DIAL' });
+    performAction(st, 'LEVER');
+    return st.V === 71 && st.armed === false;
+  });
+  T('41 swap 17 -> 71', function () { return swapDigits(17) === 71; });
+  T('42 swap 04 -> 40', function () { return swapDigits(4) === 40; });
+  T('43 swap 40 -> 04', function () { return swapDigits(40) === 4; });
+  T('44 swap 00 -> 00', function () { return swapDigits(0) === 0; });
+  T('45 lever resets the button streak', function () {
+    var r = seq([['RED'], ['LEVER']]);
+    return r.st.lastButton === 'NONE' && r.st.buttonStreak === 0;
+  });
+
+  /* ---- Overflow and terminal states (46-55) ---- */
+  T('46 overflow checked after full doubled action (60->121->243)', function () {
+    var st = inj({ V: 60, d: 4, armed: true, lastAction: 'RED' });
+    performAction(st, 'BLUE');
+    return st.V === 243 && st.status === 'OVERFLOW' && displayFor(st) === 'EE';
+  });
+  T('47 final value over 99 shows EE', function () {
+    var st = inj({ V: 95, d: 5, lastAction: 'RED' });
+    performAction(st, 'RED'); /* 95+7=102 */
+    return st.status === 'OVERFLOW' && displayFor(st) === 'EE';
+  });
+  T('48 overflow blocks dial/red/blue/lever', function () {
+    var st = inj({ V: 95, d: 5, lastAction: 'RED' });
+    performAction(st, 'RED');
+    var v = st.V;
+    var a = performAction(st, 'RED');
+    var b = performAction(st, 'BLUE');
+    var c = performAction(st, 'LEVER');
+    var d = performAction(st, 'DIAL', 1);
+    return !a.ok && !b.ok && !c.ok && !d.ok && st.V === v;
+  });
+  T('49 success blocks further puzzle actions', function () {
+    var r = seq([['DIAL', 4], ['LEVER'], ['RED'], ['RED'], ['BLUE']]);
+    if (r.st.status !== 'SUCCESS') return false;
+    var after = performAction(r.st, 'RED');
+    return after.ok === false && r.st.V === 37;
+  });
+  T('50 exhaustion blocks further puzzle actions', function () {
+    var steps = [];
+    for (var i = 0; i < 6; i++) { steps.push(['DIAL', i % 2]); }
+    var r = seq(steps);
+    if (r.st.status !== 'OUT_OF_ACTIONS') return false;
+    return performAction(r.st, 'RED').ok === false;
+  });
+  T('51 reaching 37 on action 6 is SUCCESS (not exhaustion)', function () {
+    /* dial4,red(6),red(12),blue(25),red(31),red(37) on 6th */
+    var r = seq([['DIAL', 4], ['RED'], ['RED'], ['BLUE'], ['RED'], ['RED']]);
+    return r.st.status === 'SUCCESS' && r.st.V === 37 && r.st.actionsUsed === 6;
+  });
+  T('52 six actions without 37 gives OUT_OF_ACTIONS', function () {
+    var steps = [];
+    for (var i = 0; i < 6; i++) { steps.push(['DIAL', i % 2]); }
+    var r = seq(steps);
+    return r.st.status === 'OUT_OF_ACTIONS' && r.st.actionsUsed === 6 && r.st.V === 0;
+  });
+  T('53 reset restores all initial variables', function () {
+    var st = seq([['DIAL', 4], ['LEVER'], ['RED']]).st;
+    resetInto(st);
+    var f = freshState();
+    for (var k in f) { if (st[k] !== f[k]) return false; }
+    return true;
+  });
+  T('54 reset restores budget and clears the log', function () {
+    var st = seq([['DIAL', 4], ['RED']]).st;
+    logEvent('test line');
+    resetInto(st);
+    clearLog();
+    return st.actionsUsed === 0 && st.status === 'PLAYING' && logEntries.length === 0;
+  });
+  T('55 no action after terminal state until reset', function () {
+    var r = seq([['DIAL', 4], ['LEVER'], ['RED'], ['RED'], ['BLUE']]); /* SUCCESS */
+    var v = r.st.V;
+    var a = performAction(r.st, 'LEVER');
+    resetInto(r.st);
+    var b = performAction(r.st, 'RED');
+    return !a.ok && r.st.V === 2 && b.ok === true && v === 37;
+  });
+
+  /* ---- Solution verification (56-57 = spec Tests A/B) ---- */
+  T('56 Test A: dial4,lever,red,red,blue -> 37 in 5', function () {
+    var st = freshState();
+    var trace = [];
+    performAction(st, 'DIAL', 4); trace.push([st.V, st.armed]);
+    performAction(st, 'LEVER'); trace.push([st.V, st.armed]);
+    performAction(st, 'RED'); trace.push([st.V, st.armed]);
+    performAction(st, 'RED'); trace.push([st.V, st.armed]);
+    performAction(st, 'BLUE'); trace.push([st.V, st.armed]);
+    var exp = [[0, false], [0, true], [12, false], [18, false], [37, false]];
+    for (var i = 0; i < exp.length; i++) {
+      if (trace[i][0] !== exp[i][0] || trace[i][1] !== exp[i][1]) return false;
+    }
+    return st.status === 'SUCCESS' && st.actionsUsed === 5;
+  });
+  T('57 Test B: dial4,red,red,blue,red,red -> 37 in 6', function () {
+    var st = freshState();
+    var vals = [];
+    performAction(st, 'DIAL', 4); vals.push(st.V);
+    performAction(st, 'RED'); vals.push(st.V);
+    performAction(st, 'RED'); vals.push(st.V);
+    performAction(st, 'BLUE'); vals.push(st.V);
+    performAction(st, 'RED'); vals.push(st.V);
+    performAction(st, 'RED'); vals.push(st.V);
+    var exp = [0, 6, 12, 25, 31, 37];
+    for (var i = 0; i < exp.length; i++) { if (vals[i] !== exp[i]) return false; }
+    return st.status === 'SUCCESS' && st.actionsUsed === 6;
+  });
+
+  return results;
+}
+
+/* expose for console use; harmless in page (no rules shown in UI) */
+if (typeof window !== 'undefined') {
+  window.runBoxTests = runAllTests;
+  window.__box = {
+    freshState: freshState, performAction: performAction,
+    swapDigits: swapDigits, blueOnce: blueOnce, displayFor: displayFor
+  };
+}
+
+/* =====================================================================
+   UI LAYER — thin handlers calling performAction(); render() reflects
+   the returned state. No rule logic lives here.
+   ===================================================================== */
+if (typeof document !== 'undefined') (function () {
+  var game = freshState();
+
+  var displayEl = document.getElementById('display');
+  var actionsLeftEl = document.getElementById('actionsLeft');
+  var budgetBox = document.getElementById('budgetBox');
+  var statusEl = document.getElementById('statusMsg');
+  var liveEl = document.getElementById('live');
+  var dialBtns = Array.prototype.slice.call(document.querySelectorAll('#dialBtns button'));
+  var redBtn = document.getElementById('redBtn');
+  var blueBtn = document.getElementById('blueBtn');
+  var leverBtn = document.getElementById('leverBtn');
+  var leverTrack = document.getElementById('leverTrack');
+  var resetBtn = document.getElementById('resetBtn');
+  var pointer = document.getElementById('pointer');
+  var dialFace = document.getElementById('dialFace');
+
+  /* dial tick marks around the face */
+  (function buildTicks() {
+    for (var x = 0; x <= 5; x++) {
+      var ang = -135 + x * 54;
+      var t = document.createElement('div');
+      t.className = 'tick';
+      t.style.transform = 'rotate(' + ang + 'deg) translateY(-50px)';
+      var s = document.createElement('span');
+      s.textContent = String(x);
+      s.style.transform = 'translateX(-50%) rotate(' + (-ang) + 'deg)';
+      t.appendChild(s);
+      dialFace.appendChild(t);
+    }
+  })();
+
+  function announce(msg) { if (liveEl) liveEl.textContent = msg; }
+
+  function render(prevStatus) {
+    displayEl.textContent = displayFor(game);
+    displayEl.classList.toggle('good', game.status === 'SUCCESS');
+    displayEl.classList.toggle('bad', game.status === 'OVERFLOW');
+    var left = BUDGET - game.actionsUsed;
+    actionsLeftEl.textContent = String(left);
+    budgetBox.classList.toggle('low', left <= 2);
+    pointer.style.transform = 'rotate(' + (-135 + game.d * 54) + 'deg)';
+    dialBtns.forEach(function (b) {
+      var sel = Number(b.getAttribute('data-dial')) === game.d;
+      b.setAttribute('aria-pressed', sel ? 'true' : 'false');
+      b.disabled = !canAct(game);
+    });
+    redBtn.disabled = !canAct(game);
+    blueBtn.disabled = !canAct(game);
+    leverBtn.disabled = !canAct(game);
+    /* reset always enabled */
+    var msg;
+    if (game.status === 'SUCCESS') {
+      msg = 'Success! The display reads 37 — solved in ' + game.actionsUsed + ' actions.';
+      statusEl.className = 'status win';
+    } else if (game.status === 'OVERFLOW') {
+      msg = 'Overflow! The display reads EE. Press RESET to start over.';
+      statusEl.className = 'status lose';
+    } else if (game.status === 'OUT_OF_ACTIONS') {
+      msg = 'Out of actions. The attempt is over — press RESET to try again.';
+      statusEl.className = 'status lose';
+    } else {
+      msg = 'Machine ready. Display reads ' + displayFor(game) + '. ' + left + ' actions left.';
+      statusEl.className = 'status';
+    }
+    statusEl.textContent = msg;
+    if (prevStatus !== game.status &&
+        (game.status === 'SUCCESS' || game.status === 'OVERFLOW' || game.status === 'OUT_OF_ACTIONS')) {
+      announce(msg);
+    }
+  }
+
+  /* Visual-only press animation; state already updated synchronously. */
+  function flash(el, cls) {
+    if (!el) return;
+    el.classList.add(cls || 'hit');
+    window.setTimeout(function () { el.classList.remove(cls || 'hit'); }, 160);
+  }
+
+  function doPuzzle(type, value) {
+    var prevStatus = game.status;
+    var info = performAction(game, type, value);
+    if (!info.ok) return; /* terminal/budget: controls are disabled anyway */
+    logEvent(describeOutcome(type, value, info, game));
+    if (type === 'LEVER' && leverTrack) {
+      leverTrack.classList.add('pulled');
+      window.setTimeout(function () { leverTrack.classList.remove('pulled'); }, 320);
+    }
+    if (game.status === 'SUCCESS') logEvent('Success! Display reads 37 in ' + game.actionsUsed + ' actions.');
+    else if (game.status === 'OVERFLOW') logEvent('Overflow! The display reads EE. Reset required.');
+    else if (game.status === 'OUT_OF_ACTIONS') logEvent('Out of actions. Reset to try again.');
+    render(prevStatus);
+  }
+
+  dialBtns.forEach(function (b) {
+    b.addEventListener('click', function () { doPuzzle('DIAL', Number(b.getAttribute('data-dial'))); });
+  });
+  redBtn.addEventListener('click', function () { flash(redBtn); doPuzzle('RED'); });
+  blueBtn.addEventListener('click', function () { flash(blueBtn); doPuzzle('BLUE'); });
+  leverBtn.addEventListener('click', function () { doPuzzle('LEVER'); });
+  resetBtn.addEventListener('click', function () {
+    resetInto(game);
+    clearLog();
+    logEvent('Machine reset. Display reads 00. 6 actions available.');
+    render('RESET');
+    announce('Machine reset. Fresh attempt with 6 actions.');
+  });
+
+  /* ---- hidden developer test mode: ?dev, #dev, or Alt+Shift+D ---- */
+  var devPanel = document.getElementById('devPanel');
+  var runBtn = document.getElementById('runTestsBtn');
+  var summary = document.getElementById('testSummary');
+  var table = document.getElementById('testTable');
+  function showDev(auto) {
+    devPanel.hidden = false;
+    if (auto) runDev();
+  }
+  function runDev() {
+    var rs = runAllTests();
+    var p = rs.filter(function (t) { return t.pass; }).length;
+    summary.textContent = ' ' + p + '/' + rs.length + ' passed';
+    summary.className = p === rs.length ? 'pass' : 'fail';
+    var html = '<tr><th>#</th><th>Test</th><th>Result</th></tr>';
+    rs.forEach(function (t, i) {
+      html += '<tr><td>' + (i + 1) + '</td><td>' + t.name + '</td><td class="' +
+        (t.pass ? 'pass' : 'fail') + '">' + (t.pass ? 'PASS' : 'FAIL' + (t.error ? ' — ' + t.error : '')) + '</td></tr>';
+    });
+    table.innerHTML = html;
+  }
+  if (runBtn) runBtn.addEventListener('click', runDev);
+  document.addEventListener('keydown', function (e) {
+    if (e.altKey && e.shiftKey && (e.key === 'D' || e.key === 'd')) {
+      devPanel.hidden = !devPanel.hidden;
+      if (!devPanel.hidden) runDev();
+    }
+  });
+  try {
+    var q = String(window.location.search || '') + ' ' + String(window.location.hash || '');
+    if (/dev/i.test(q)) showDev(true);
+  } catch (e) { /* file:// without location access — stay hidden */ }
+
+  clearLog();
+  logEvent('Machine ready. Display reads 00. Make it show 37.');
+  render('INIT');
+})();
+</script>
+</body>
+</html>

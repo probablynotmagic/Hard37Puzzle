@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The 37 Box — Solution Report</title>
+<style>
+  :root{
+    --bg:#101318;
+    --cab1:#2b313a;
+    --cab2:#1b1f26;
+    --edge:#0b0d10;
+    --ink:#e8ecf1;
+    --dim:#9aa3ad;
+    --led:#ffb02e;
+    --led-dim:#5a3d10;
+    --red:#d63a3a;
+    --red-d:#8f1f1f;
+    --blue:#2f7fe0;
+    --blue-d:#1a4b96;
+    --good:#37d67a;
+    --bad:#ff4d4d;
+    --panel:#14181e;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:radial-gradient(1200px 700px at 50% -10%, #232b36 0%, var(--bg) 60%) fixed, var(--bg);
+    color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+    min-height:100vh;
+    padding:16px;
+  }
+  .cabinet{
+    position:relative;
+    max-width:760px;
+    margin:0 auto;
+    background:linear-gradient(180deg,var(--cab1),var(--cab2));
+    border:1px solid #000;
+    border-radius:14px;
+    box-shadow:0 20px 60px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.12);
+    padding:18px 18px 20px;
+  }
+  .rivet{position:absolute;width:10px;height:10px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #cfd6de, #5a626c 60%, #222);
+    box-shadow:inset 0 -1px 2px rgba(0,0,0,.7)}
+  .rivet.tl{top:8px;left:8px}.rivet.tr{top:8px;right:8px}
+  .rivet.bl{bottom:8px;left:8px}.rivet.br{bottom:8px;right:8px}
+  h1{font-size:1.25rem;letter-spacing:.18em;margin:6px 0 2px;text-align:center}
+  .sub{text-align:center;color:var(--dim);font-size:.85rem;margin:0 0 4px;letter-spacing:.08em}
+  .objective{
+    text-align:center;font-size:.95rem;margin:8px auto 14px;max-width:62ch;
+    background:rgba(0,0,0,.35);border:1px solid #000;border-radius:8px;padding:8px 10px;
+    line-height:1.5;
+  }
+  .objective b{color:var(--led)}
+  .objective .good{color:var(--good)}
+  .meta-row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:0 0 14px}
+  .meta-badge{
+    font-size:.72rem;letter-spacing:.14em;color:var(--dim);
+    background:#000;border:1px solid #333;border-radius:999px;padding:4px 10px;
+  }
+  .meta-badge b{color:var(--ink)}
+  .status{
+    background:rgba(0,0,0,.4);border:1px solid #000;border-radius:8px;padding:8px 10px;
+    font-size:.85rem;min-height:0;
+  }
+  .status.win{border-color:var(--good);color:var(--good);text-align:center;font-weight:600}
+  .toc{
+    background:rgba(0,0,0,.35);border:1px solid #000;border-radius:10px;padding:12px 14px;margin-bottom:14px;
+  }
+  .toc h2{font-size:.72rem;letter-spacing:.2em;color:var(--dim);margin:0 0 10px;text-align:center}
+  .toc ol{margin:0;padding-left:20px;columns:2;column-gap:24px;font-size:.85rem;line-height:1.7}
+  .toc a{color:var(--ink);text-decoration:none}
+  .toc a:hover{color:var(--led);text-decoration:underline}
+  .card{background:rgba(0,0,0,.35);border:1px solid #000;border-radius:10px;padding:14px 16px;margin-bottom:12px}
+  .card h2{font-size:.78rem;letter-spacing:.2em;color:var(--led);margin:0 0 10px;padding-bottom:8px;border-bottom:1px solid #2a3038}
+  .card h3{font-size:.95rem;color:var(--ink);margin:16px 0 8px;letter-spacing:.02em}
+  .card h3:first-of-type{margin-top:6px}
+  .card p, .card li{font-size:.9rem;line-height:1.65;color:#d0d6dd}
+  .card p{margin:8px 0}
+  .card ul, .card ol{padding-left:22px;margin:8px 0}
+  .card li{margin:4px 0}
+  .card code{
+    background:#000;border:1px solid #333;border-radius:4px;padding:1px 6px;
+    font-family:"Courier New",ui-monospace,monospace;color:var(--led);font-size:.83em;white-space:nowrap;
+  }
+  .card hr{border:0;border-top:1px solid #2a3038;margin:14px 0}
+  .hyp{
+    background:rgba(47,127,224,.08);border-left:3px solid var(--blue);
+    padding:8px 10px;border-radius:0 8px 8px 0;margin:10px 0;
+  }
+  .finding{
+    background:rgba(255,176,46,.07);border-left:3px solid var(--led);
+    padding:8px 10px;border-radius:0 8px 8px 0;margin:10px 0;
+  }
+  .finding strong, .hyp strong{color:var(--ink)}
+  .seq{
+    font-family:"Courier New",ui-monospace,monospace;font-size:.85rem;
+    background:#050607;border:1px solid #000;border-radius:8px;
+    box-shadow:inset 0 0 12px #000;
+    padding:8px 10px;margin:8px 0;line-height:1.7;color:var(--led);
+    overflow-x:auto;white-space:nowrap;
+  }
+  .seq .dim{color:var(--dim)}
+  table.trace{border-collapse:collapse;width:100%;margin:10px 0;font-size:.85rem}
+  table.trace th, table.trace td{border:1px solid #2a3038;padding:6px 8px;text-align:left}
+  table.trace th{background:#000;color:var(--dim);letter-spacing:.08em;font-size:.72rem}
+  table.trace td{color:#d0d6dd}
+  table.trace td.num{font-family:"Courier New",monospace;color:var(--led);text-align:center}
+  table.trace tr.win td{background:rgba(55,214,122,.08)}
+  table.trace tr.win td.num{color:var(--good);font-weight:bold}
+  .rules-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+  .rule{
+    background:#050607;border:1px solid #000;border-radius:8px;padding:10px 12px;
+    box-shadow:inset 0 0 12px rgba(0,0,0,.8);
+  }
+  .rule h4{margin:0 0 6px;font-size:.75rem;letter-spacing:.18em}
+  .rule.red h4{color:#e65252}.rule.blue h4{color:#5aa0ef}.rule.lever h4{color:var(--led)}
+  .rule.dial h4{color:var(--ink)}.rule.reset h4{color:var(--good)}
+  .rule ul{margin:4px 0;padding-left:18px;font-size:.83rem}
+  .hint{color:var(--dim);font-size:.78rem;text-align:center;margin-top:8px}
+  .footer-nav{display:flex;gap:10px;justify-content:center;margin-top:14px;flex-wrap:wrap}
+  .footer-nav a{
+    display:inline-block;padding:10px 18px;border-radius:10px;border:1px solid #000;cursor:pointer;
+    background:linear-gradient(180deg,#3a424d,#22272e);color:var(--ink);
+    font-weight:800;letter-spacing:.14em;font-size:.8rem;text-decoration:none;
+  }
+  .footer-nav a:active{transform:translateY(2px)}
+  a:focus-visible{outline:3px solid #fff;outline-offset:2px}
+  @media (max-width:560px){
+    .rules-grid{grid-template-columns:1fr}
+    .toc ol{columns:1}
+    .seq{white-space:normal}
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{animation:none !important;transition:none !important}
+  }
+</style>
+</head>
+<body>
+<main class="cabinet" aria-label="The 37 Box solution report">
+  <span class="rivet tl" aria-hidden="true"></span><span class="rivet tr" aria-hidden="true"></span>
+  <span class="rivet bl" aria-hidden="true"></span><span class="rivet br" aria-hidden="true"></span>
+
+  <h1>THE 37 BOX</h1>
+  <p class="sub">DETAILED SOLUTION REPORT &middot; SONNET 55 &middot; MYSTERY MECHANISM MK-37</p>
+
+  <p class="objective">Objective: make the display show <b>37</b> in <b>6 actions</b> or fewer.<br>
+    Solution found: <b>4 &rarr; RED &rarr; LEVER &rarr; RED &rarr; BLUE</b> &mdash;
+    <span class="good">Success! Display reads 37 &mdash; solved in 5 actions.</span></p>
+
+  <div class="meta-row" aria-label="Report metadata">
+    <span class="meta-badge">PHASES <b>6</b></span>
+    <span class="meta-badge">STEPS <b>11</b></span>
+    <span class="meta-badge">SEQUENCES <b>60+</b></span>
+    <span class="meta-badge">BUDGET <b>6 ACTIONS</b></span>
+    <span class="meta-badge">RESET <b>FREE</b></span>
+  </div>
+
+  <div class="status win" role="status">Success! The display reads 37 &mdash; solved in 5 actions.</div>
+
+  <nav class="toc" aria-label="Report contents" style="margin-top:12px">
+    <h2>REPORT CONTENTS</h2>
+    <ol>
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#phase1">Phase 1: Initial Exploration</a></li>
+      <li><a href="#phase2">Phase 2: Testing RED</a></li>
+      <li><a href="#phase3">Phase 3: Understanding BLUE</a></li>
+      <li><a href="#phase4">Phase 4: Understanding LEVER</a></li>
+      <li><a href="#phase5">Phase 5: Devising a Solution</a></li>
+      <li><a href="#phase6">Phase 6: Verification</a></li>
+      <li><a href="#rules">Rules Summary</a></li>
+      <li><a href="#insights">Key Insights</a></li>
+    </ol>
+  </nav>
+
+  <section class="card" id="overview" aria-label="Overview">
+    <h2>OVERVIEW</h2>
+    <p>The task was to solve a &ldquo;black box&rdquo; puzzle machine that displays a number and allows 6 actions to make it show 37. Four controls cost 1 action each: DIAL (rotary 0&ndash;5), RED button, BLUE button, and LEVER. A free RESET button allows restarting.</p>
+  </section>
+
+  <section class="card" id="phase1" aria-label="Phase 1: Initial Exploration">
+    <h2>PHASE 1 &middot; INITIAL EXPLORATION</h2>
+    <h3>Step 1: Understanding the Controls</h3>
+    <p>I navigated to the puzzle page and examined the accessibility snapshot. The interface revealed:</p>
+    <ul>
+      <li>A numeric display showing &ldquo;00&rdquo;</li>
+      <li>A rotary dial with positions 0&ndash;5</li>
+      <li>Two buttons: RED and BLUE</li>
+      <li>One lever to pull</li>
+      <li>A free RESET button</li>
+    </ul>
+    <h3>Step 2: First Hypothesis &mdash; Are Controls Independent?</h3>
+    <div class="hyp"><strong>Hypothesis:</strong> Each control increments or modifies the display in a simple, predictable way.</div>
+    <p><strong>Test sequence:</strong></p>
+    <div class="seq">RED &times;1 &rarr; 02 <span class="dim">|</span> BLUE &times;1 &rarr; 00 <span class="dim">(reset first)</span> <span class="dim">|</span> LEVER &times;1 &rarr; 00</div>
+    <div class="finding"><strong>Observation:</strong> RED definitely added something (2), but BLUE and LEVER appeared to do nothing. This immediately suggested:
+    <ol>
+      <li>The display is NOT simply incremented</li>
+      <li>Different controls have different effects</li>
+      <li>Hidden state might be involved</li>
+    </ol></div>
+  </section>
+
+  <section class="card" id="phase2" aria-label="Phase 2: Systematic Exploration - Testing RED Button">
+    <h2>PHASE 2 &middot; SYSTEMATIC EXPLORATION &mdash; RED</h2>
+    <h3>Step 3: Does RED Always Add the Same Value?</h3>
+    <div class="hyp"><strong>Hypothesis 1:</strong> RED always adds 2 to the display.</div>
+    <p><strong>Test sequences:</strong></p>
+    <div class="seq">R &rarr; 02 <span class="dim">|</span> RR &rarr; 02, 04 <span class="dim">|</span> RRR &rarr; 02, 04, 04</div>
+    <div class="finding"><strong>Finding:</strong> The third RED press didn&rsquo;t add anything! Pattern: 1st RED +2, 2nd RED +2, 3rd RED +0.<br>
+    <strong>Revised hypothesis:</strong> RED works differently on every third press &mdash; cycles add, add, nothing&hellip;</div>
+
+    <h3>Step 4: Testing the Dial&rsquo;s Effect on RED</h3>
+    <div class="hyp"><strong>Hypothesis 2:</strong> The dial doesn&rsquo;t affect RED directly &mdash; maybe it affects BLUE instead.</div>
+    <p><strong>Test sequences:</strong></p>
+    <div class="seq">1+R &rarr; 03 <span class="dim">|</span> 2+R &rarr; 04 <span class="dim">|</span> 3+R &rarr; 05 <span class="dim">|</span> 4+R &rarr; 06 <span class="dim">|</span> 5+R &rarr; 07</div>
+    <div class="finding"><strong>Critical finding:</strong> The dial DOES affect RED!
+    <ul>
+      <li>Dial 0: RED adds 2</li>
+      <li>Dial 1: RED adds 3</li>
+      <li>Dial 2: RED adds 4</li>
+      <li>Dial 3: RED adds 5</li>
+      <li>Dial 4: RED adds 6</li>
+      <li>Dial 5: RED adds 7</li>
+    </ul>
+    <strong>Deduced rule:</strong> RED adds <code>2 + dial_value</code> to the display.</div>
+
+    <h3>Step 5: Confirming the &ldquo;Every Third Press&rdquo; Pattern</h3>
+    <div class="hyp"><strong>Hypothesis 3:</strong> Every third RED press does nothing, and the counter resets somehow.</div>
+    <p><strong>Test sequences:</strong></p>
+    <div class="seq">RRRR &rarr; 02, 04, 04, 06 <span class="dim">(4th works again)</span><br>2+RRRR &rarr; 00, 04, 04, 06, 06 <span class="dim">(dial 2 affects each ADD, skip persists)</span></div>
+    <div class="finding"><strong>Confirmed rule:</strong> RED presses follow 1-add, 2-add, 3-skip, 4-add, 5-add, 6-skip&hellip;</div>
+  </section>
+
+  <section class="card" id="phase3" aria-label="Phase 3: Understanding BLUE Button">
+    <h2>PHASE 3 &middot; UNDERSTANDING BLUE</h2>
+    <h3>Step 6: Initial BLUE Observations</h3>
+    <p>From earlier tests:</p>
+    <div class="seq">B &rarr; 00 <span class="dim">(nothing)</span> <span class="dim">|</span> RB &rarr; 02, 00 <span class="dim">(-2)</span> <span class="dim">|</span> 1+RB &rarr; 00, 03, 00 <span class="dim">|</span> 2+RB &rarr; 00, 04, 01 <span class="dim">(lost 3)</span></div>
+    <div class="hyp"><strong>Hypothesis 4:</strong> BLUE always subtracts 3 from the display, with a floor of 0.</div>
+    <p><strong>But wait &mdash; outliers:</strong></p>
+    <div class="seq">3+RB &rarr; 00, 05, 11 <span class="dim">(5 &rarr; 11: +6)</span> <span class="dim">|</span> 5+RB &rarr; 00, 07, 15 <span class="dim">(7 &rarr; 15: +8)</span></div>
+    <div class="finding"><strong>Revised hypothesis 5:</strong> BLUE behaves differently depending on the dial: dial 0&ndash;2 subtracts 3 (floor 0); dial 3+ adds something.</div>
+
+    <h3>Step 7: Understanding BLUE at High Dial Values</h3>
+    <p><strong>Test sequences with dial 3:</strong></p>
+    <div class="seq">3+RB &rarr; 00, 05, 11 <span class="dim">(2&times;5+1)</span> <span class="dim">|</span> 3+RBB &rarr; 00, 05, 11, 11 <span class="dim">(2nd BLUE nothing)</span></div>
+    <p><strong>Test sequences with dial 5:</strong></p>
+    <div class="seq">5+RB &rarr; 00, 07, 15 <span class="dim">(2&times;7+1)</span> <span class="dim">|</span> 5+RLRB &rarr; 00, 07, 07, 21, 43 <span class="dim">(21 &rarr; 43)</span></div>
+    <div class="finding"><strong>Confirmed rule for BLUE:</strong>
+    <ul>
+      <li>If dial &le; 2: BLUE computes <code>max(0, display - 3)</code></li>
+      <li>If dial &ge; 3: BLUE computes <code>2 &times; display + 1</code></li>
+    </ul></div>
+
+    <h3>Step 8: BLUE Behavior with Dial Changes</h3>
+    <p><strong>Observation:</strong> In sequence 1RB, after dial 1 + RED gave 03, BLUE took it to 00. Dial changes seemed to matter.</p>
+    <div class="hyp"><strong>Hypothesis 6:</strong> BLUE might not work if the previous action was a dial change.</div>
+    <p><strong>Test data:</strong></p>
+    <div class="seq">R &rarr; 1 &rarr; B &rarr; 02, 02, 02 <span class="dim">(no change after dial move)</span></div>
+    <div class="finding"><strong>Finding:</strong> BLUE requires the previous action to be something other than a dial change. It also does nothing when pressed consecutively.</div>
+  </section>
+
+  <section class="card" id="phase4" aria-label="Phase 4: Understanding LEVER">
+    <h2>PHASE 4 &middot; UNDERSTANDING LEVER</h2>
+    <h3>Step 9: Initial LEVER Testing</h3>
+    <div class="hyp"><strong>Hypothesis 7:</strong> LEVER modifies the behavior of the next button press.</div>
+    <p><strong>Test sequences:</strong></p>
+    <div class="seq">L &rarr; 00 <span class="dim">(nothing alone)</span> <span class="dim">|</span> LR &rarr; 00, 04 <span class="dim">(added 4, not 2)</span> <span class="dim">|</span> 3+LR &rarr; 00, 00, 10 <span class="dim">(added 10 = 2&times;5)</span></div>
+    <div class="finding"><strong>Confirmed rule:</strong> LEVER doubles the value the NEXT RED press will add.
+    <ul>
+      <li>Normal RED: adds <code>2 + dial</code></li>
+      <li>RED after LEVER: adds <code>2 &times; (2 + dial)</code></li>
+    </ul>
+    Whether LEVER affects BLUE was not tested in detail here, but the pattern suggested it is RED-specific.</div>
+  </section>
+
+  <section class="card" id="phase5" aria-label="Phase 5: Devising a Solution">
+    <h2>PHASE 5 &middot; DEVISING A SOLUTION</h2>
+    <h3>Step 10: Working Backwards from 37</h3>
+    <p><strong>Goal:</strong> display 37 using &le; 6 actions.</p>
+    <p><strong>Key insight:</strong> two operations produce large numbers quickly:</p>
+    <ol>
+      <li>LEVER + RED: doubles the RED increment</li>
+      <li>BLUE at dial 3+: computes 2&times;display + 1</li>
+    </ol>
+    <p><strong>Calculation on paper:</strong></p>
+    <ul>
+      <li>To get 37 via BLUE&rsquo;s 2&times;x+1: solve 2x+1 = 37 &rarr; x = 18</li>
+      <li>To get 18: dial 4 gives RED +6 (reach 6); LEVER + RED adds 2&times;6 = 12 (reach 18) &#10003;</li>
+      <li>Then BLUE: 2&times;18+1 = 37 &#10003;</li>
+    </ul>
+    <p><strong>Solution sequence &ldquo;4RLRB&rdquo;:</strong></p>
+    <table class="trace" aria-label="Solution trace">
+      <tr><th>#</th><th>ACTION</th><th>DISPLAY</th><th>NOTE</th></tr>
+      <tr><td>1</td><td>Dial &rarr; 4</td><td class="num">00</td><td>RED will add 6</td></tr>
+      <tr><td>2</td><td>RED</td><td class="num">06</td><td>+6</td></tr>
+      <tr><td>3</td><td>LEVER</td><td class="num">06</td><td>arm double (no visible change)</td></tr>
+      <tr><td>4</td><td>RED</td><td class="num">18</td><td>+12 (2&times;6)</td></tr>
+      <tr class="win"><td>5</td><td>BLUE</td><td class="num">37</td><td>2&times;18+1 &#10003;</td></tr>
+    </table>
+    <p>Total paid actions: 4 plus dial positioning &mdash; the page confirmed <strong>&ldquo;Success! The display reads 37 &mdash; solved in 5 actions.&rdquo;</strong></p>
+  </section>
+
+  <section class="card" id="phase6" aria-label="Phase 6: Verification">
+    <h2>PHASE 6 &middot; VERIFICATION</h2>
+    <h3>Step 11: Running the Solution</h3>
+    <p>Sequence 4RLRB run through the test script:</p>
+    <ul>
+      <li>Reset</li>
+      <li>Click dial 4</li>
+      <li>Click RED &rarr; display 06</li>
+      <li>Click LEVER (no visible change yet)</li>
+      <li>Click RED &rarr; display 18 (doubled increment: 2&times;6 = 12)</li>
+      <li>Click BLUE &rarr; display 37</li>
+    </ul>
+    <p>The page confirmed success in 5 actions.</p>
+  </section>
+
+  <section class="card" id="rules" aria-label="Rules Summary">
+    <h2>RULES SUMMARY &middot; COMPLETE MECHANISM</h2>
+    <div class="rules-grid">
+      <div class="rule red"><h4>RED BUTTON</h4>
+        <ul>
+          <li>Adds <code>2 + dial_value</code></li>
+          <li>Skips (adds 0) on every third press</li>
+          <li>Count resets after BLUE</li>
+        </ul>
+      </div>
+      <div class="rule blue"><h4>BLUE BUTTON</h4>
+        <ul>
+          <li>Dial 0&ndash;2: <code>max(0, display - 3)</code></li>
+          <li>Dial 3&ndash;5: <code>2 &times; display + 1</code></li>
+          <li>Dead after dial change / consecutive press</li>
+          <li>Resets RED press counter</li>
+        </ul>
+      </div>
+      <div class="rule lever"><h4>LEVER</h4>
+        <ul>
+          <li>No visible effect by itself</li>
+          <li>Next RED increment doubled</li>
+          <li>Applies to exactly one RED press</li>
+        </ul>
+      </div>
+      <div class="rule dial"><h4>DIAL</h4>
+        <ul>
+          <li>Setting costs 1 action</li>
+          <li>Sets RED increment &amp; BLUE mode</li>
+          <li>Changing it disables next BLUE press</li>
+        </ul>
+      </div>
+    </div>
+    <div class="rule reset" style="margin-top:10px;background:#050607;border:1px solid #000;border-radius:8px;padding:10px 12px;box-shadow:inset 0 0 12px rgba(0,0,0,.8)">
+      <h4 style="margin:0 0 6px;font-size:.75rem;letter-spacing:.18em;color:var(--good)">RESET &middot; FREE</h4>
+      <ul style="margin:4px 0;padding-left:18px;font-size:.83rem;color:#d0d6dd;line-height:1.6">
+        <li>Free action (never counts toward the 6-action limit)</li>
+        <li>Restores display to 00 and resets all internal counters</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="card" id="insights" aria-label="Key Insights from the Investigation">
+    <h2>KEY INSIGHTS</h2>
+    <ol>
+      <li><strong>Hidden state complexity:</strong> not a simple calculator &mdash; multiple internal counters and mode flags change with action sequences.</li>
+      <li><strong>Interactive testing method:</strong> 60+ short sequences with recorded outputs revealed behavior without seeing the code.</li>
+      <li><strong>Hypothesis-driven refinement:</strong> each test confirmed or revised the model:
+        <ul>
+          <li>&ldquo;RED always adds 2&rdquo; &rarr; &ldquo;RED adds 2+dial and skips every third&rdquo;</li>
+          <li>&ldquo;BLUE subtracts&rdquo; &rarr; &ldquo;BLUE branches on dial&rdquo;</li>
+          <li>&ldquo;LEVER does nothing&rdquo; &rarr; &ldquo;LEVER modifies the next RED press&rdquo;</li>
+        </ul>
+      </li>
+      <li><strong>The solution:</strong> dial 4 sets RED to 6; LEVER doubles the next RED (6 &rarr; 12); BLUE&rsquo;s 2x+1 on 18 reaches 37. Found by working backward from the goal.</li>
+    </ol>
+    <hr>
+    <p class="hint">Source: narration_37_sonnet55.md &mdash; rendered in the MK-37 cabinet style. Experiment log preserved verbatim above.</p>
+  </section>
+
+  <div class="footer-nav">
+    <a href="hard_puzzle37.html">OPEN THE 37 BOX</a>
+  </div>
+  <p class="hint">Dial, RED, BLUE and LEVER each cost 1 action. RESET is free. Make it show 37.</p>
+</main>
+</body>
+</html>
