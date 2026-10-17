@@ -1,0 +1,1903 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Inside the Alien Black Box &mdash; Experiment Atlas</title>
+<meta name="description" content="A canvas atlas of every experiment used to reverse-engineer the alien world black box: the domain and its two walls, two independent decelerations, an inverse-cube colour-coded pair force, mass-ignoring velocity-swap collisions, a charge spring saturating at 10, and a 0.01 s substep integrator.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Inside the Alien Black Box — Experiment Atlas">
+<meta property="og:description" content="A canvas atlas of every experiment used to reverse-engineer the alien world black box — 27 experiments, 8 constants, one deterministic seed.">
+<meta property="og:image" content="https://YOUR-USERNAME.github.io/YOUR-REPO/og-image.png">
+<meta property="og:url" content="https://YOUR-USERNAME.github.io/YOUR-REPO/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2304060b'/%3E%3Ccircle cx='11' cy='16' r='5' fill='%235ad8ff'/%3E%3Ccircle cx='22' cy='16' r='3' fill='%23ff6ad5'/%3E%3C/svg%3E">
+<style>
+
+*,*::before,*::after{box-sizing:border-box}
+:root{
+  --bg:#04060b; --ink:#e9edf8; --ink2:#9aa3ba; --ink3:#66708a;
+  --line:rgba(255,255,255,.10); --line2:rgba(255,255,255,.20);
+  --cy:#5ad8ff; --mg:#ff6ad5; --am:#ffc861; --gr:#4ee39b; --rd:#ff5f6d; --bl:#56a8ff;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,Inter,Arial,sans-serif;
+}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);
+  font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+#bg{position:fixed;inset:0;z-index:0;display:block}
+#vig{position:fixed;inset:0;z-index:1;pointer-events:none;
+  background:radial-gradient(130% 95% at 50% -15%,transparent 35%,rgba(0,0,0,.62) 100%)}
+#scan{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.028;
+  background:repeating-linear-gradient(0deg,#fff 0 1px,transparent 1px 3px)}
+#prog{position:fixed;top:0;left:0;height:2px;width:0;z-index:70;
+  background:linear-gradient(90deg,var(--cy),var(--mg),var(--am),var(--gr));box-shadow:0 0 12px rgba(90,216,255,.7)}
+.z{position:relative;z-index:2}
+
+header{position:sticky;top:0;z-index:60;backdrop-filter:blur(16px);
+  background:linear-gradient(180deg,rgba(4,6,11,.94),rgba(4,6,11,.76));border-bottom:1px solid var(--line)}
+.hin{max-width:1520px;margin:0 auto;padding:10px 22px;display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;flex:0 0 auto}
+.ring{width:28px;height:28px;border-radius:50%;
+  background:conic-gradient(from 200deg,var(--cy),var(--mg),var(--am),var(--gr),var(--cy));
+  animation:sp 8s linear infinite;position:relative}
+.ring::after{content:"";position:absolute;inset:7px;border-radius:50%;background:var(--bg)}
+@keyframes sp{to{transform:rotate(360deg)}}
+.brand b{font-size:14px;letter-spacing:.15em;text-transform:uppercase;display:block}
+.brand i{font-style:normal;font-size:9.5px;letter-spacing:.24em;color:var(--ink3);text-transform:uppercase}
+nav{display:flex;gap:2px;flex:1;min-width:0;overflow-x:auto;scrollbar-width:none}
+nav::-webkit-scrollbar{display:none}
+nav a{color:var(--ink3);text-decoration:none;font-size:12.5px;padding:7px 11px;border-radius:9px;
+  white-space:nowrap;transition:.16s;font-family:var(--mono)}
+nav a:hover{color:var(--ink);background:rgba(255,255,255,.06)}
+nav a.act{color:#04060c;background:linear-gradient(120deg,var(--cy),#8ee9ff);font-weight:700}
+.hstat{font-family:var(--mono);font-size:10.5px;color:var(--ink3);letter-spacing:.08em;
+  border:1px solid var(--line);border-radius:999px;padding:5px 11px;white-space:nowrap}
+
+main{max-width:1520px;margin:0 auto;padding:0 22px 90px}
+section{scroll-margin-top:78px;padding-top:56px}
+.sh{display:flex;align-items:baseline;gap:14px;margin:0 0 6px;flex-wrap:wrap}
+.sh .n{font-family:var(--mono);font-size:11px;letter-spacing:.3em;color:var(--cy)}
+.sh h2{margin:0;font-size:clamp(23px,2.9vw,34px);letter-spacing:-.02em;font-weight:780}
+.sh .sub{color:var(--ink2);max-width:74ch;margin:6px 0 26px;font-size:15px}
+.rule{height:1px;background:linear-gradient(90deg,var(--line2),transparent);margin-bottom:26px}
+
+.hero{padding:64px 0 12px;position:relative}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:10.5px;
+  letter-spacing:.26em;text-transform:uppercase;color:var(--gr);border:1px solid rgba(78,227,155,.3);
+  background:rgba(78,227,155,.07);padding:6px 13px;border-radius:999px;margin-bottom:22px}
+.eyebrow i{width:6px;height:6px;border-radius:50%;background:var(--gr);box-shadow:0 0 9px var(--gr);
+  animation:pu 2s ease-in-out infinite}
+@keyframes pu{50%{opacity:.25}}
+.hero h1{margin:0 0 16px;font-size:clamp(34px,6.2vw,74px);line-height:1;font-weight:820;letter-spacing:-.035em}
+.hero h1 em{font-style:normal;background:linear-gradient(100deg,var(--cy),var(--mg) 38%,var(--am) 66%,var(--gr));
+  -webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 6px 28px rgba(255,106,213,.2))}
+.hero p.lede{max-width:70ch;color:var(--ink2);font-size:17px;margin:0 0 8px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:10px;margin:26px 0 0}
+@media(min-width:1200px){.kpis{grid-template-columns:repeat(8,1fr)}}
+.kpi{border:1px solid var(--line);border-radius:13px;padding:13px 14px;
+  background:linear-gradient(160deg,rgba(255,255,255,.07),rgba(255,255,255,.015))}
+.kpi .s{font-family:var(--mono);font-size:15px;color:var(--c)}
+.kpi .v{font-size:23px;font-weight:760;margin:3px 0 2px;font-variant-numeric:tabular-nums}
+.kpi .l{font-size:11px;color:var(--ink3)}
+.kpi[data-c=cy]{--c:var(--cy)} .kpi[data-c=mg]{--c:var(--mg)} .kpi[data-c=am]{--c:var(--am)} .kpi[data-c=gr]{--c:var(--gr)}
+
+.card{border:1px solid var(--line);border-radius:18px;overflow:hidden;margin:0 0 18px;
+  background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.012));
+  transition:border-color .25s}
+.card:hover{border-color:var(--line2)}
+.ch{display:flex;gap:13px;align-items:center;padding:12px 17px;border-bottom:1px solid var(--line);
+  background:rgba(255,255,255,.022);flex-wrap:wrap}
+.eid{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.06em;color:#04060c;
+  background:linear-gradient(120deg,var(--cy),#8ee9ff);border-radius:7px;padding:4px 9px;flex:0 0 auto}
+.eid.b{background:linear-gradient(120deg,var(--mg),#ffa8e6)}
+.eid.g{background:linear-gradient(120deg,var(--gr),#9dfbd0)}
+.eid.a{background:linear-gradient(120deg,var(--am),#ffe0a0)}
+.eid.r{background:linear-gradient(120deg,var(--rd),#ffa8ae)}
+.q{font-size:14.5px;font-weight:600;flex:1 1 320px;min-width:0}
+.res{font-family:var(--mono);font-size:11px;color:var(--gr);border:1px solid rgba(78,227,155,.3);
+  background:rgba(78,227,155,.08);padding:4px 10px;border-radius:999px;flex:0 0 auto}
+.res.r{color:var(--rd);border-color:rgba(255,95,109,.32);background:rgba(255,95,109,.08)}
+.res.a{color:var(--am);border-color:rgba(255,200,97,.32);background:rgba(255,200,97,.08)}
+.cvwrap{padding:14px 17px 0}
+.cv{display:block;width:100%;height:250px;border-radius:12px;background:#03050b;
+  border:1px solid rgba(255,255,255,.055)}
+.cv.tall{height:320px}
+.io{padding:13px 17px 16px;display:grid;gap:9px;grid-template-columns:1fr}
+@media(min-width:900px){.io{grid-template-columns:auto 1fr auto;align-items:start;gap:14px}}
+.io .lbl{font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink3);
+  padding-top:2px;white-space:nowrap}
+.io .txt{font-size:13.4px;color:var(--ink2)}
+.io .txt b{color:var(--ink);font-weight:650}
+.io .txt code{font-family:var(--mono);font-size:12.4px;background:rgba(90,216,255,.09);
+  border:1px solid rgba(90,216,255,.18);color:#a5eaff;padding:1px 5px;border-radius:5px;
+  overflow-wrap:anywhere}
+.io .rv{font-family:var(--mono);font-size:12px;color:var(--am);white-space:nowrap;
+  background:rgba(255,200,97,.07);border:1px solid rgba(255,200,97,.2);border-radius:9px;padding:6px 11px}
+
+table.t{width:100%;border-collapse:collapse;font-size:13px}
+table.t th{font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--ink3);text-align:left;padding:8px 11px;border-bottom:1px solid var(--line2)}
+table.t td{padding:7px 11px;border-bottom:1px solid rgba(255,255,255,.05);color:var(--ink2)}
+table.t td:first-child{font-family:var(--mono);color:var(--ink)}
+table.t tr:last-child td{border-bottom:0}
+table.t tr:hover td{background:rgba(90,216,255,.05)}
+.twrap{padding:4px 17px 16px;overflow:auto}
+
+.two{display:grid;gap:18px}
+@media(min-width:1000px){.two{grid-template-columns:1fr 1fr}}
+.triple{display:grid;gap:18px}
+@media(min-width:1200px){.triple{grid-template-columns:repeat(3,1fr)}}
+
+.truth{display:grid;gap:18px}
+@media(min-width:1040px){.truth{grid-template-columns:1.35fr 1fr}}
+.note{border:1px solid var(--line);border-left:3px solid var(--am);border-radius:0 14px 14px 0;
+  background:rgba(255,200,97,.06);padding:14px 17px;font-size:13.4px;color:var(--ink2);margin:0 0 12px}
+.note b{color:#ffe2a8}
+.note.g{border-left-color:var(--gr);background:rgba(78,227,155,.06)}
+.note.g b{color:#b6f7d8}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-family:var(--mono);font-size:10.5px;color:var(--ink3);
+  padding:0 17px 14px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:10px;height:10px;border-radius:3px;display:inline-block}
+
+footer{border-top:1px solid var(--line);margin-top:50px;padding:30px 22px 70px;text-align:center;
+  color:var(--ink3);font-size:12.5px}
+footer b{color:var(--ink2)}
+.rv{opacity:0;transform:translateY(16px);transition:opacity .55s cubic-bezier(.2,.8,.2,1),transform .55s cubic-bezier(.2,.8,.2,1)}
+.rv.in{opacity:1;transform:none}
+@media(max-width:820px){.hin{padding:9px 14px;gap:10px}nav{order:3;flex:1 1 100%;border-top:1px solid var(--line);padding-top:7px}
+  .hstat{display:none}main{padding:0 14px 70px}.cv{height:210px}.cv.tall{height:250px}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.rv{opacity:1;transform:none}}
+
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas><div id="vig"></div><div id="scan"></div><div id="prog"></div>
+<div class="z">
+<header><div class="hin">
+  <div class="brand"><div class="ring"></div>
+    <div><b>Alien&nbsp;Physics</b><i>experiment atlas</i></div></div>
+  <nav>
+    <a href="#setup">00 setup</a>
+    <a href="#sA">A geometry</a>
+    <a href="#sB">B drag</a>
+    <a href="#sC">C pair force</a>
+    <a href="#sD">D collisions</a>
+    <a href="#sE">E charge</a>
+    <a href="#sF">F integration</a>
+    <a href="#sG">G edges</a>
+    <a href="#sH">H validation</a>
+    <a href="#truth">09 truth</a>
+  </nav>
+  <span class="hstat" id="stat">27 experiments &middot; 8 constants</span>
+</div></header>
+<main>
+
+<section class="hero" id="top">
+  <div class="rv" style="margin-bottom:30px">
+    <video controls playsinline preload="metadata"
+      style="display:block;width:100%;max-height:420px;border-radius:14px;border:1px solid var(--line2);background:#03050b;box-shadow:0 18px 50px rgba(0,0,0,.5)">
+      <source src="The_Digital_Detective.mp4" type="video/mp4">
+      Your browser does not support the video tag.
+    </video>
+  </div>
+  <div class="eyebrow rv"><i></i>black box @ 127.0.0.1:8765 &middot; deterministic given a seed</div>
+  <h1 class="rv">Inside the black box:<br><em>an experiment atlas</em></h1>
+  <p class="lede rv">Every panel below is a live canvas running the <b>exact</b> laws that were measured
+  out of the alien world &mdash; not an illustration of them. Each card is one experiment: the question,
+  the control, the numbers that came back, and the rule it pinned down.</p>
+  <div class="kpis rv">
+    <div class="kpi" data-c="cy"><div class="s">G</div><div class="v">1.0</div><div class="l">pair force &middot; 1/d&sup3;</div></div>
+    <div class="kpi" data-c="mg"><div class="s">&beta;</div><div class="v">0.5</div><div class="l">quadratic drag</div></div>
+    <div class="kpi" data-c="am"><div class="s">F</div><div class="v">0.3</div><div class="l">floor deceleration</div></div>
+    <div class="kpi" data-c="gr"><div class="s">k</div><div class="v">0.4</div><div class="l">charge spring</div></div>
+    <div class="kpi" data-c="gr"><div class="s">v*</div><div class="v">1.5</div><div class="l">charge threshold</div></div>
+    <div class="kpi" data-c="gr"><div class="s">dq/dt</div><div class="v">5.0</div><div class="l">charge rate</div></div>
+    <div class="kpi" data-c="gr"><div class="s">q<sub>max</sub></div><div class="v">10</div><div class="l">charge ceiling</div></div>
+    <div class="kpi" data-c="cy"><div class="s">h</div><div class="v">0.01</div><div class="l">substep &middot; e = 1</div></div>
+  </div>
+  <div class="card rv" style="margin-top:26px">
+    <div class="ch"><span class="eid g">LIVE</span>
+      <span class="q">The whole world at once &mdash; all rules running together</span>
+      <span class="res" id="hud">8 laws, one substep</span></div>
+    <div class="cvwrap"><canvas class="cv tall" id="cHero"></canvas></div>
+    <div class="legend">
+      <span><i class="sw" style="background:#ff5f6d"></i>red</span>
+      <span><i class="sw" style="background:#56a8ff"></i>blue</span>
+      <span><i class="sw" style="background:#4ee39b"></i>green</span>
+      <span>same colour attracts &middot; different repels</span>
+      <span>green ring = charge q</span>
+      <span>amber line = wall at W/2</span>
+    </div>
+  </div>
+</section>
+
+
+<section id="setup">
+  <div class="sh"><span class="n">00</span><h2>Setup &mdash; what the black box exposes</h2></div>
+  <p class="sub">Before any physics could be measured, the machine had to be opened up: what the
+  server offers, what an object is made of, and the loop every experiment was run through.</p>
+  <div class="rule"></div>
+
+  <div class="card rv">
+    <div class="ch"><span class="eid">S1</span><span class="q">GET / and GET /schema &mdash; discovering the surface</span>
+      <span class="res">13 endpoints, 3 colours</span></div>
+    <div class="cvwrap"><canvas class="cv tall" id="cApi"></canvas></div>
+    <div class="io">
+      <span class="lbl">Probe</span>
+      <span class="txt">A world is a <b>rectangle of two numbers</b> plus a bag of objects. Creation takes
+      <code>width, height, seed</code>; time advances only when you ask it to.</span>
+      <span class="rv">GET / &rarr; endpoints</span>
+    </div>
+    <div class="twrap">
+      <table class="t">
+        <tr><th>endpoint</th><th>request</th><th>response / effect</th></tr>
+        <tr><td>POST /worlds</td><td>{width?, height?, seed?}</td><td>world_id + state (defaults 100&times;100)</td></tr>
+        <tr><td>GET /worlds/{id}</td><td>&mdash;</td><td>full snapshot: time, tick, width, height, objects</td></tr>
+        <tr><td>POST /worlds/{id}/objects</td><td>{mass?, radius?, color?, x?, y?, vx?, vy?, q?}</td><td>object_id + object</td></tr>
+        <tr><td>PATCH .../objects/{oid}</td><td>{mass?, radius?, color?, pos?, vel?, q?, alive?}</td><td>mutates one body</td></tr>
+        <tr><td>POST /worlds/{id}/step</td><td>{dt}</td><td>advances time; dt clamped to [0,10]</td></tr>
+        <tr><td>POST /worlds/{id}/apply</td><td>{object_id, impulse:[ix,iy]}</td><td>instant &Delta;v = impulse / mass</td></tr>
+        <tr><td>POST /worlds/{id}/apply</td><td>{object_id, force:[fx,fy], duration}</td><td>integrated with full physics</td></tr>
+        <tr><td>GET .../measure/{oid}</td><td>?quantity=pos|vel|mass|radius|color|q|all&amp;noise=</td><td>exact values when noise=0</td></tr>
+        <tr><td>GET /truth?confirm=true</td><td>&mdash;</td><td>spoiler &mdash; withheld until the end</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="triple">
+    <div class="card rv">
+      <div class="ch"><span class="eid b">S2</span><span class="q">The object schema</span></div>
+      <div class="cvwrap"><canvas class="cv" id="cObj"></canvas></div>
+    </div>
+    <div class="card rv">
+      <div class="ch"><span class="eid b">S3</span><span class="q">The world schema &mdash; and its surprise</span></div>
+      <div class="cvwrap"><canvas class="cv" id="cWorld"></canvas></div>
+    </div>
+    <div class="card rv">
+      <div class="ch"><span class="eid b">S4</span><span class="q">The measurement loop used throughout</span></div>
+      <div class="cvwrap"><canvas class="cv" id="cLoop"></canvas></div>
+    </div>
+  </div>
+</section>
+
+<section id="sA">
+  <div class="sh"><span class="n">A</span><h2>Geometry, walls and the shape of the domain</h2></div>
+  <div class="rule"></div>
+  <div class="card rv">
+    <div class="ch"><span class="eid ">A0</span><span class="q">Exp 0 &mdash; is anything moving on its own?</span><span class="res ">no gravity</span></div>
+    <div class="cvwrap"><canvas class="cv" id="cA0"></canvas></div>
+    <div class="io"><span class="lbl">Spawn one body at (50, 50) at rest. Step five times.</span><span class="txt">Position, velocity and q stay <b>bit-identical</b>. Every force law must vanish at v = 0 or be proportional to v &mdash; and nothing pulls.</span><span class="rv">5 steps &rarr; (50,50), (0,0), q=0</span></div>
+  </div>
+  <div class="card rv">
+    <div class="ch"><span class="eid ">A1</span><span class="q">A2/A3 &mdash; sweep the box: where are the walls?</span><span class="res ">walls at W/2, H/2</span></div>
+    <div class="cvwrap"><canvas class="cv" id="cA1"></canvas></div>
+    <div class="io"><span class="lbl">Spawn bodies across a wide range of x at rest; one step.</span><span class="txt">Everything with <b>x &gt; 50 is snapped to exactly 50</b>. Sweeping the world size moves the limit with the <b>half</b>-extent: W=37 clamps at 18.5, W=200 at 100.</span><span class="rv">W=100 &rarr; clamp 50</span></div>
+  </div>
+  <div class="card rv">
+    <div class="ch"><span class="eid ">A2</span><span class="q">A4/D5 &mdash; does the wall care about the radius?</span><span class="res ">centre only</span></div>
+    <div class="cvwrap"><canvas class="cv" id="cA2"></canvas></div>
+    <div class="io"><span class="lbl">Same approach, four radii: 0.01, 1, 5, 20.</span><span class="txt">A body with <b>radius 20 still clamps at x = 50</b>, not at 30. The wall is a bound on the centre; bodies overlap each other freely at the wall.</span><span class="rv">r=20 &rarr; clamp at 50</span></div>
+  </div>
+  <div class="card rv">
+    <div class="ch"><span class="eid ">A3</span><span class="q">A6 &mdash; is there a wall on the other side?</span><span class="res r">x&lt;0 unbounded</span></div>
+    <div class="cvwrap"><canvas class="cv" id="cA3"></canvas></div>
+    <div class="io"><span class="lbl">Release a body at x = 0.1 with a small negative velocity and step.</span><span class="txt">It crosses <b>x = 0 without slowing and keeps going to x = &minus;0.0199</b>. There is no left wall, no floor, no ceiling. The domain is a half-space.</span><span class="rv">reaches x = &minus;0.0199</span></div>
+  </div>
+  <div class="card rv">
+    <div class="ch"><span class="eid ">A4</span><span class="q">A5/A7 &mdash; how elastic is the wall?</span><span class="res ">e = 1 exactly</span></div>
+    <div class="cvwrap"><canvas class="cv" id="cA4"></canvas></div>
+    <div class="io"><span class="lbl">Fire a body at the wall at v = 1, 2, 5, 10, 20, 40 and read the outgoing speed.</span><span class="txt">The outgoing velocity is the <b>exact negation of the post-drag velocity</b>: 10 &rarr; &minus;(10 &minus; 0.5 &minus; 0.003) = &minus;9.497. Perfectly elastic, no loss.</span><span class="rv">v=10 &rarr; v=&minus;9.497</span></div>
+  </div>
+  <div class="card rv">
+    <div class="ch"><span class="eid ">A5</span><span class="q">A7 &mdash; when during the step is the wall applied?</span><span class="res ">per substep</span></div>
+    <div class="cvwrap"><canvas class="cv" id="cA5"></canvas></div>
+    <div class="io"><span class="lbl">1 &times; step(dt=0.1) versus 10 &times; step(dt=0.01) for a body that bounces.</span><span class="txt"><b>Bit-identical</b>, and the bounce is seen mid-call: so the wall is resolved on every substep, after the position integration.</span><span class="rv">identical to the last bit</span></div>
+  </div>
+</section>
+<section id="sB">
+  <div class="sh"><span class="n">B</span><h2>Free motion &mdash; two independent decelerations</h2></div>
+  <div class="rule"></div>
+  <div class="card rv">
+    <div class="ch"><span class="eid b">B1</span><span class="q">B1 &mdash; how much does a body slow down per substep?</span><span class="res ">0.5v²/m + 0.003</span></div>
+    <div class="cvwrap"><canvas class="cv tall" id="cB1"></canvas></div>
+    <div class="io"><span class="lbl">Single body, m = 1, one substep of h = 0.01, speeds 0.5 &rarr; 100.</span><span class="txt">After subtracting the mass-dependent term, a <b>constant 0.003</b> is left at every speed. So there are two brakes: quadratic drag plus a fixed 0.3&nbsp;/&nbsp;s&sup2;.</span><span class="rv">h=0.01 &rarr; 0.003 left over</span></div>
+  </div>
+  <div class="card rv">
+    <div class="ch"><span class="eid b">B2</span><span class="q">F &mdash; which brake depends on mass?</span><span class="res ">floor term does not</span></div>
+    <div class="cvwrap"><canvas class="cv tall" id="cB2"></canvas></div>
+    <div class="io"><span class="lbl">Hold v = 10, sweep the mass from 0.25 to 256.</span><span class="txt">The quadratic part scales as <b>1/m</b>; the extra 0.003 is <b>identical at every mass</b> &mdash; a Coulomb term, not a viscous one.</span><span class="rv">&Delta;v = 0.5v&sup2;h/m + 0.003</span></div>
+  </div>
+  <div class="card rv">
+    <div class="ch"><span class="eid b">B3</span><span class="q">F2 &mdash; is that second brake really floor friction?</span><span class="res a">acts everywhere</span></div>
+    <div class="cvwrap"><canvas class="cv" id="cB3"></canvas></div>
+    <div class="io"><span class="lbl">Same body, same speed, at y = 0.5, 1, 2, 3, 5, 10, 20, 30, 40, 50.</span><span class="txt">The deceleration is <b>0.8 = 0.5&middot;1&sup2;/1 + 0.3 at every height</b>, including far above the floor. It is a constant deceleration of 0.3 in the &minus;v&#770; direction.</span><span class="rv">&Delta;v/h = 0.8 at all y</span></div>
+  </div>
+  <div class="card rv">
+    <div class="ch"><span class="eid b">B4</span><span class="q">B &mdash; along which axis does the floor term bite?</span><span class="res ">along &minus;v&#770;</span></div>
+    <div class="cvwrap"><canvas class="cv" id="cB4"></canvas></div>
+    <div class="io"><span class="lbl">Give a body v = (8, &minus;4) and take one substep.</span><span class="txt">The loss is <b>collinear with v</b>: &Delta;v = &minus;h(0.5|v|/m + 0.3)v/|v|. Not a per-component friction.</span><span class="rv">&Delta;v = &minus;0.1068, &minus;0.0534</span></div>
+  </div>
+  <div class="card rv">
+    <div class="ch"><span class="eid b">B5</span><span class="q">F2 &mdash; what happens to a body slower than 0.3h?</span><span class="res r">sign flips every substep</span></div>
+    <div class="cvwrap"><canvas class="cv tall" id="cB5"></canvas></div>
+    <div class="io"><span class="lbl">Start at v = 0.001, 0.01, 10&minus;6 and step ten times.</span><span class="txt">The 0.3 brake is applied <b>unconditionally</b>, so a body slower than 0.3&middot;h = 0.003 <b>overshoots and reverses</b> on every substep. 0.001 ends at +0.001000074996.</span><span class="rv">v=0.001 &rarr; +0.001000075</span></div>
+  </div>
+  <div class="card rv">
+    <div class="ch"><span class="eid b">B6</span><span class="q">B &mdash; does position use the old or the new velocity?</span><span class="res ">symplectic: x += v&#8341;&middot;h</span></div>
+    <div class="cvwrap"><canvas class="cv" id="cB6"></canvas></div>
+    <div class="io"><span class="lbl">From (5,5) with v = (&minus;20, 0), one substep.</span><span class="txt">x lands on 5 &minus; 0.17997 = <b>4.82003</b> = 5 + (&minus;17.997)&middot;0.01: the <b>updated</b> velocity moves the body.</span><span class="rv">x = 4.82003</span></div>
+  </div>
+</section>
+<section id="sC">
+  <div class="sh"><span class="n">C</span><h2>Pairwise force law</h2></div>
+  <div class="rule"></div>
+  <div class="card rv">
+    <div class="ch"><span class="eid g">C1</span><span class="q">C &mdash; what is the distance exponent?</span><span class="res ">1/d&sup3;, not 1/d&sup2;</span></div>
+    <div class="cvwrap"><canvas class="cv tall" id="cC1"></canvas></div>
+    <div class="io"><span class="lbl">Two bodies at rest, m = 1, d = 2.5 &rarr; 80, one substep.</span><span class="txt">|a|&middot;d&sup3; = <b>1.000000 at every distance</b>. On a log&ndash;log plot the points sit exactly on the 1/d&sup3; line and nowhere near 1/d&sup2;.</span><span class="rv">a = 1/d&sup3;</span></div>
+  </div>
+  <div class="card rv">
+    <div class="ch"><span class="eid g">C2</span><span class="q">C &mdash; how do the masses enter?</span><span class="res ">F = G&middot;m&#7522;m&#7523;/d&sup3;</span></div>
+    <div class="cvwrap"><canvas class="cv tall" id="cC2"></canvas></div>
+    <div class="io"><span class="lbl">Sweep m&#7522;, m&#7523; over {1,2,4,10} at d = 10 and read both accelerations.</span><span class="txt">a&#7522;m&#7522; = &minus;a&#7523;m&#7523; always: a true equal-and-opposite force. And a body feels <b>G&middot;m(other)/d&sup3;</b> &mdash; its own mass does not enter.</span><span class="rv">m&#7522;m&#7523;=100 &rarr; a = 100&times;</span></div>
+  </div>
+  <div class="card rv">
+    <div class="ch"><span class="eid g">C3</span><span class="q">C2 &mdash; the colour law: all nine pairings</span><span class="res ">same = attract, differ = repel</span></div>
+    <div class="cvwrap"><canvas class="cv tall" id="cC3"></canvas></div>
+    <div class="io"><span class="lbl">All 3&times;3 colour combinations at d = 10, m = 1.</span><span class="txt">Identical magnitude, opposite sign: <b>equal colours attract, different colours repel</b>, symmetrically in both orderings.</span><span class="rv">a = &plusmn;1/d&sup3;</span></div>
+  </div>
+  <div class="card rv">
+    <div class="ch"><span class="eid g">C4</span><span class="q">C &mdash; does the radius change the force?</span><span class="res ">centre distance only</span></div>
+    <div class="cvwrap"><canvas class="cv" id="cC4"></canvas></div>
+    <div class="io"><span class="lbl">Four radius pairs (0.1, 2, 3) at the same centre distance d = 10.</span><span class="txt">All give <b>a = 0.001</b>. The law uses the centre-to-centre distance, never a surface gap; and there is no cut-off (still measurable at d = 199).</span><span class="rv">a = 0.001 for every radius</span></div>
+  </div>
+</section>
+<section id="sD">
+  <div class="sh"><span class="n">D</span><h2>Collisions</h2></div>
+  <div class="rule"></div>
+  <div class="card rv">
+    <div class="ch"><span class="eid a">D1</span><span class="q">D3 &mdash; what happens to the velocities?</span><span class="res ">they swap; mass ignored</span></div>
+    <div class="cvwrap"><canvas class="cv tall" id="cD1"></canvas></div>
+    <div class="io"><span class="lbl">Head-on, r = 20 (so the mutual force is negligible), v = &plusmn;0.2, gap 0.05.</span><span class="txt">The two bodies <b>exchange velocity vectors</b> &mdash; a 100:1 mass pair behaves exactly like a 1:1 pair. Neither momentum nor energy is conserved.</span><span class="rv">m = 100:1 &rarr; still swaps</span></div>
+  </div>
+  <div class="card rv">
+    <div class="ch"><span class="eid a">D2</span><span class="q">D4 &mdash; the whole vector, or only the normal component?</span><span class="res ">whole vector</span></div>
+    <div class="cvwrap"><canvas class="cv tall" id="cD2"></canvas></div>
+    <div class="io"><span class="lbl">Oblique approach: v&#7522; = (0.2, 0.05), v&#7523; = (&minus;0.1, 0.02).</span><span class="txt">Both components swap: (0.2,0.05) &harr; (&minus;0.1,0.02). <b>The entire vector is exchanged</b>, not just the part along the line of centres. A 45&deg; collision does the same.</span><span class="rv">full vector exchanged</span></div>
+  </div>
+  <div class="card rv">
+    <div class="ch"><span class="eid a">D3</span><span class="q">D4 &mdash; how are overlapping bodies pushed apart?</span><span class="res ">split half/half, no mass</span></div>
+    <div class="cvwrap"><canvas class="cv tall" id="cD3"></canvas></div>
+    <div class="io"><span class="lbl">Overlap bodies by 4 units and step, at m = 1:1, 4:1 and 100:1; also r = 20 vs 10.</span><span class="txt">Both move by <b>exactly half the overlap</b> regardless of mass and radii: (100,136) &rarr; (98,138) in every case.</span><span class="rv">each moves overlap/2</span></div>
+  </div>
+  <div class="card rv">
+    <div class="ch"><span class="eid a">D4</span><span class="q">D4 &mdash; does it fire when they are separating?</span><span class="res a">unconditional</span></div>
+    <div class="cvwrap"><canvas class="cv" id="cD4"></canvas></div>
+    <div class="io"><span class="lbl">Overlap bodies moving <b>apart</b>: v = (0.2, 0.5).</span><span class="txt">They swap anyway &rarr; (0.49575, 0.1968). There is <b>no approaching-check</b>; two overlapping bodies at rest stay at rest.</span><span class="rv">swaps while separating</span></div>
+  </div>
+  <div class="card rv">
+    <div class="ch"><span class="eid a">D5</span><span class="q">D5/E &mdash; the hidden twist: contact kills the force</span><span class="res r">no force while touching</span></div>
+    <div class="cvwrap"><canvas class="cv tall" id="cD5"></canvas></div>
+    <div class="io"><span class="lbl">Two bodies at rest, r = 5 each (touching at d = 10). Compare d = 10 and d = 10.001.</span><span class="txt">At <b>d &le; 10 the mutual force is exactly zero</b>; at 10.001 it jumps to 1/d&sup3;. Contact replaces the force with the swap. Found only when a 6-body run diverged by precisely this term.</span><span class="rv">a = 0 for d &le; r&#7522;+r&#7523;</span></div>
+  </div>
+</section>
+<section id="sE">
+  <div class="sh"><span class="n">E</span><h2>Charge</h2></div>
+  <div class="rule"></div>
+  <div class="card rv">
+    <div class="ch"><span class="eid g">E1</span><span class="q">E &mdash; what does q do to a body?</span><span class="res ">a = &minus;0.4&middot;q&middot;r</span></div>
+    <div class="cvwrap"><canvas class="cv tall" id="cE1"></canvas></div>
+    <div class="io"><span class="lbl">Set q via PATCH, v = 0, one substep, at (10,10), (20,5), (&minus;10,10), (40,40) and masses 0.5&ndash;16.</span><span class="txt">The acceleration is <b>&minus;0.4&middot;q&middot;r</b> &mdash; a linear spring to the origin, <b>identical at every mass</b>. q enters no other term.</span><span class="rv">k = 0.4, mass-free</span></div>
+  </div>
+  <div class="card rv">
+    <div class="ch"><span class="eid g">E2</span><span class="q">E/F &mdash; how does q build up?</span><span class="res ">5.0 per second above v*</span></div>
+    <div class="cvwrap"><canvas class="cv tall" id="cE2"></canvas></div>
+    <div class="io"><span class="lbl">Sweep the starting speed across 1.48 &rarr; 2.05 and read q after one substep.</span><span class="txt">The test is on the speed <b>after</b> the drag step: 1.4956 &rarr; nothing, 1.5054 &rarr; gain. The rate is <b>5.0 per second</b> (0.05 per 0.01 s), and it is a rate, not a step constant.</span><span class="rv">|v| &gt; 1.5 &rarr; dq/dt = 5</span></div>
+  </div>
+  <div class="card rv">
+    <div class="ch"><span class="eid g">E3</span><span class="q">E2 &mdash; does q ever stop growing?</span><span class="res ">saturates at 10</span></div>
+    <div class="cvwrap"><canvas class="cv tall" id="cE3"></canvas></div>
+    <div class="io"><span class="lbl">Hold a body above the threshold for 600 substeps; then PATCH q = 99.</span><span class="txt">q climbs 0.05, 0.10, &hellip; and sticks at <b>exactly 10.0</b>. PATCH q = 99 is accepted by the API but clamped to 10 on the next step. Without this cap a single-body run diverged by 0.33.</span><span class="rv">q &larr; min(q + 5h, 10)</span></div>
+  </div>
+</section>
+<section id="sF">
+  <div class="sh"><span class="n">F</span><h2>Integration</h2></div>
+  <div class="rule"></div>
+  <div class="card rv">
+    <div class="ch"><span class="eid ">F1</span><span class="q">F3 &mdash; how big is one integration step?</span><span class="res ">h = 0.01 s</span></div>
+    <div class="cvwrap"><canvas class="cv tall" id="cF1"></canvas></div>
+    <div class="io"><span class="lbl">Run dt = 0.1, 0.05, 0.02, 0.01 as single calls from the same state.</span><span class="txt">All four give the <b>identical</b> result (21.2909082076, 9.41589576). dt = 0.005 and below give something else &mdash; so the substep is capped at 0.01 s.</span><span class="rv">dt = 0.1 &equiv; 10 &times; 0.01</span></div>
+  </div>
+  <div class="card rv">
+    <div class="ch"><span class="eid ">F2</span><span class="q">F3 &mdash; are the substeps equal?</span><span class="res ">ceil(dt/0.01) equal parts</span></div>
+    <div class="cvwrap"><canvas class="cv" id="cF2"></canvas></div>
+    <div class="io"><span class="lbl">Compare 1 &times; step(0.015) against 2 &times; step(0.0075).</span><span class="txt"><b>Bit-identical</b>, and 15 &times; step(0.001) differs. So dt is split into n = ceil(dt/0.01) <b>equal</b> substeps, not n full ones plus a remainder.</span><span class="rv">0.015 = 2 &times; 0.0075</span></div>
+  </div>
+  <div class="card rv">
+    <div class="ch"><span class="eid ">F3</span><span class="q">F3 &mdash; the exact order inside one substep</span><span class="res ">pinned bit-exactly</span></div>
+    <div class="cvwrap"><canvas class="cv tall" id="cF3"></canvas></div>
+    <div class="io"><span class="lbl">A body at v = (8,&minus;4) with charge feedback, traced for ten substeps.</span><span class="txt">The pipeline below reproduces <b>7.818431 / &minus;3.909216</b> to the last digit. Each step of the pipeline can be re-proved by a targeted experiment.</span><span class="rv">reproduces to 2e&minus;16</span></div>
+  </div>
+</section>
+<section id="sG">
+  <div class="sh"><span class="n">G</span><h2>API behaviour and edge cases</h2></div>
+  <div class="rule"></div>
+  <div class="card rv">
+    <div class="ch"><span class="eid ">G1</span><span class="q">G &mdash; what does alive:false do?</span><span class="res ">freezes the body</span></div>
+    <div class="cvwrap"><canvas class="cv" id="cG1"></canvas></div>
+    <div class="io"><span class="lbl">Set alive = false on a moving body and step.</span><span class="txt">Position, velocity and q all stop <b>dead</b>; the body exerts and receives nothing. It is simply removed from the simulation.</span><span class="rv">frozen, not colliding</span></div>
+  </div>
+  <div class="card rv">
+    <div class="ch"><span class="eid ">G2</span><span class="q">G &mdash; impulse and force</span><span class="res ">J/m, integrated properly</span></div>
+    <div class="cvwrap"><canvas class="cv" id="cG2"></canvas></div>
+    <div class="io"><span class="lbl">apply impulse (3,&minus;6) to m = 4; then apply force (4,0) for 0.05 s to m = 2.</span><span class="txt">Impulse gives <b>exactly J/m</b>. The force runs through the whole substep loop &mdash; the 0.3 brake and the drag are still applied, giving 0.087975691 instead of a naive 0.1.</span><span class="rv">F(4,0)&middot;0.05s &rarr; v = 0.0879757</span></div>
+  </div>
+  <div class="card rv">
+    <div class="ch"><span class="eid ">G3</span><span class="q">D &mdash; a three-body collision chain</span><span class="res ">index-order exchange</span></div>
+    <div class="cvwrap"><canvas class="cv tall" id="cG3"></canvas></div>
+    <div class="io"><span class="lbl">Three bodies in a row, radii 1, 1.2, 0.8, gaps 0.1 and 0.2, moving inward.</span><span class="txt">All three are in contact at once and the velocities travel down the chain in index order, exactly reproduced by a single i&lt;j pass.</span><span class="rv">(0.5,&minus;0.3,&minus;0.7) &rarr; swapped</span></div>
+  </div>
+  <div class="card rv">
+    <div class="ch"><span class="eid ">G4</span><span class="q">G &mdash; two bodies at the identical point</span><span class="res a">degenerate but stable</span></div>
+    <div class="cvwrap"><canvas class="cv" id="cG4"></canvas></div>
+    <div class="io"><span class="lbl">Spawn two bodies at exactly (100,100) with opposite velocities.</span><span class="txt">No crash, no NaN: the velocities still swap and the bodies are pushed apart to r&#7522;+r&#7523; using some fallback direction &mdash; the only rule left un-nailed.</span><span class="rv">d = 0 handled</span></div>
+  </div>
+</section>
+<section id="sH">
+  <div class="sh"><span class="n">H</span><h2>Validation &mdash; how much do we trust it?</h2></div>
+  <div class="rule"></div>
+  <div class="card rv">
+    <div class="ch"><span class="eid b">H1</span><span class="q">H &mdash; does the rebuilt world match the server?</span><span class="res ">bit-exact for 2000 steps</span></div>
+    <div class="cvwrap"><canvas class="cv tall" id="cH1"></canvas></div>
+    <div class="io"><span class="lbl">Re-run the model against the server for thousands of substeps and log the error.</span><span class="txt">One body: <b>7.3e&minus;16 for 2000 substeps</b> &mdash; machine precision. Several bodies stay there too until a contact test finally flips.</span><span class="rv">max err 7.3e&minus;16</span></div>
+  </div>
+  <div class="card rv">
+    <div class="ch"><span class="eid b">H2</span><span class="q">H &mdash; then why does it drift later?</span><span class="res a">chaos, not a missing rule</span></div>
+    <div class="cvwrap"><canvas class="cv tall" id="cH2"></canvas></div>
+    <div class="io"><span class="lbl">Control: perturb <b>our own model</b> by one ULP and re-run &mdash; 12 random scenarios.</span><span class="txt">One ULP of divergence grows to the <b>same magnitude</b> as the model-vs-server difference (median 3.0e&minus;3 vs 2.0e&minus;3). The Coulomb overshoot plus a discrete contact predicate makes the world chaotic.</span><span class="rv">1 ULP &rarr; same blow-up</span></div>
+  </div>
+</section>
+
+<section id="truth">
+  <div class="sh"><span class="n">09</span><h2>Comparison with the ground truth</h2></div>
+  <p class="sub">The spoiler endpoint was opened only after the hypothesis was written down and
+  predicted. It agrees with every rule and every constant &mdash; but the implementation turned out to be
+  more specific than the summary in three places.</p>
+  <div class="rule"></div>
+  <div class="truth">
+    <div class="card rv">
+      <div class="ch"><span class="eid g">T</span><span class="q">Field by field</span><span class="res">full agreement</span></div>
+      <div class="twrap">
+        <table class="t">
+          <tr><th>field</th><th>truth</th><th>measured here</th></tr>
+          <tr><td>force_law</td><td>G&middot;m&#7522;m&#7523;/d&sup3; (inverse cube)</td><td>identical, G = 1.0</td></tr>
+          <tr><td>direction</td><td>same colour attract</td><td>identical, differ &rarr; repel</td></tr>
+          <tr><td>drag</td><td>&minus;(&beta;/m)&middot;v|v|</td><td>identical, &beta; = 0.5</td></tr>
+          <tr><td>floor_decel</td><td>&minus;0.3&middot;(v/|v|)</td><td>identical, mass-free</td></tr>
+          <tr><td>collisions</td><td>(v&#7522;,v&#7523;) &rarr; (v&#7523;,v&#7522;)</td><td>identical, mass ignored</td></tr>
+          <tr><td>charge</td><td>+0.05 per 0.01 s above v = 1.5</td><td>identical (&equiv; rate 5.0)</td></tr>
+          <tr><td>charge force</td><td>&minus;0.4&middot;q&middot;pos</td><td>identical, mass-free</td></tr>
+          <tr><td>walls</td><td>elastic reflection</td><td>identical, e = 1</td></tr>
+          <tr><td>integration</td><td>semi-implicit Euler, 0.01 s</td><td>identical, h = 0.01</td></tr>
+        </table>
+      </div>
+    </div>
+    <div>
+      <div class="card rv">
+        <div class="ch"><span class="eid a">+1</span><span class="q">q saturates at exactly 10</span></div>
+        <div class="io" style="padding-top:14px"><span class="lbl">Gap</span>
+          <span class="txt">The summary only says &ldquo;+0.05 per 0.01 s&rdquo;. In the implementation
+          <code>q &larr; min(q + 5h, 10)</code>; <code>PATCH q=99</code> is clamped back on the next step.</span>
+          <span class="rv">found by a 0.33 miss</span></div>
+      </div>
+      <div class="card rv">
+        <div class="ch"><span class="eid a">+2</span><span class="q">the domain is not a rectangle</span></div>
+        <div class="io" style="padding-top:14px"><span class="lbl">Gap</span>
+          <span class="txt">The summary says &ldquo;bounded rectangle&rdquo;. Measured: walls only at
+          <code>W/2</code> and <code>H/2</code>, <b>no wall on the negative side</b> &mdash; a body pushed hard
+          reaches x = &minus;10.05 and y = &minus;30.75 with no resistance.</span>
+          <span class="rv">half-extent, unbounded</span></div>
+      </div>
+      <div class="card rv">
+        <div class="ch"><span class="eid a">+3</span><span class="q">no force while touching</span></div>
+        <div class="io" style="padding-top:14px"><span class="lbl">Gap</span>
+          <span class="txt">Unmentioned: at <code>d &le; r&#7522;+r&#7523;</code> the mutual force is exactly
+          zero. Found only when a six-body run diverged by precisely the 1/d&sup3; term of the touching pair.</span>
+          <span class="rv">contact replaces force</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  Every canvas on this page runs the discovered rules directly &mdash;
+  <b>G = 1.0</b>, <b>&beta; = 0.5</b>, <b>F = 0.3</b>, <b>k = 0.4</b>, <b>v* = 1.5</b>,
+  <b>dq/dt = 5</b>, <b>q<sub>max</sub> = 10</b>, <b>h = 0.01 s</b>, <b>e = 1</b>.
+  Single self-contained file &middot; no network required.
+</footer>
+
+</div>
+<script>
+
+(function(){
+'use strict';
+var $ = function(s){return document.querySelector(s);};
+
+/* ============================================================ constants */
+var K={G:1.0,KQ:0.4,CD:0.5,CF:0.3,VT:1.5,DQ:5.0,QMAX:10.0,H:0.01,W:100,WH:100};
+var COL={red:'#ff5f6d',blue:'#56a8ff',green:'#4ee39b'};
+var MONO='ui-monospace,Menlo,Consolas,monospace';
+var C={cy:'#5ad8ff',mg:'#ff6ad5',am:'#ffc861',gr:'#4ee39b',rd:'#ff5f6d',
+       ink:'#e9edf8',ink2:'#9aa3ba',ink3:'#66708a',grid:'rgba(255,255,255,.055)',
+       wall:'#ffc861',dim:'rgba(255,255,255,.16)',dimmer:'#2a3040'};
+
+/* ============================================================== helpers */
+function T(g,s,x,y,c,sz,al,wt){
+  g.save();
+  g.font=(wt||400)+' '+(sz||11)+'px '+MONO;
+  g.fillStyle=c||C.ink3;
+  g.textAlign=al||'left'; g.textBaseline='middle';
+  g.fillText(s,x,y); g.restore();
+}
+function RR(g,x,y,w,h,r){
+  g.beginPath();
+  if(g.roundRect){ g.roundRect(x,y,w,h,r); return; }
+  r=Math.min(r,w/2,h/2);
+  g.moveTo(x+r,y); g.arcTo(x+w,y,x+w,y+h,r); g.arcTo(x+w,y+h,x,y+h,r);
+  g.arcTo(x,y+h,x,y,r); g.arcTo(x,y,x+w,y,r); g.closePath();
+}
+function box(g,x,y,w,h,fill,stroke,r){
+  RR(g,x,y,w,h,r===undefined?8:r);
+  if(fill){ g.fillStyle=fill; g.fill(); }
+  if(stroke){ g.strokeStyle=stroke; g.lineWidth=1; g.stroke(); }
+}
+function ln(g,x1,y1,x2,y2,c,w,dash){
+  g.save(); g.strokeStyle=c; g.lineWidth=w||1;
+  if(dash) g.setLineDash(dash);
+  g.beginPath(); g.moveTo(x1,y1); g.lineTo(x2,y2); g.stroke(); g.restore();
+}
+function arr(g,x1,y1,x2,y2,c,w,head){
+  ln(g,x1,y1,x2,y2,c,w||1.6);
+  var a=Math.atan2(y2-y1,x2-x1), hd=head||7, s=hd*0.52;
+  g.fillStyle=c; g.beginPath();
+  g.moveTo(x2,y2);
+  g.lineTo(x2-hd*Math.cos(a-s), y2-hd*Math.sin(a-s));
+  g.lineTo(x2-hd*Math.cos(a+s), y2-hd*Math.sin(a+s));
+  g.closePath(); g.fill();
+}
+function withA(c,a){
+  if(c.charAt(0)==='#'){
+    var h=c.slice(1);
+    if(h.length===3) h=h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
+    var n=parseInt(h,16);
+    return 'rgba('+((n>>16)&255)+','+((n>>8)&255)+','+(n&255)+','+a+')';
+  }
+  return c;                      /* already rgba(): leave it alone */
+}
+function dot(g,x,y,r,c,glow){
+  if(!(isFinite(x)&&isFinite(y)&&isFinite(r))){ return; }
+  if(glow!==false){
+    var gr=g.createRadialGradient(x,y,0,x,y,r*3.4);
+    gr.addColorStop(0,c);
+    gr.addColorStop(.3,withA(c,'0.33'));
+    gr.addColorStop(1,'rgba(0,0,0,0)');
+    g.fillStyle=gr; g.beginPath(); g.arc(x,y,r*3.4,0,6.2832); g.fill();
+  }
+  g.fillStyle=c; g.beginPath(); g.arc(x,y,r,0,6.2832); g.fill();
+}
+function circ(g,x,y,r,c,w,dash){
+  g.save(); g.strokeStyle=c; g.lineWidth=w||1.6;
+  if(dash) g.setLineDash(dash);
+  g.beginPath(); g.arc(x,y,r,0,6.2832); g.stroke(); g.restore();
+}
+function bg(f){ f.g.fillStyle='#03050b'; f.g.fillRect(0,0,f.w,f.h); }
+function grid(f,step){
+  var g=f.g; g.save(); g.strokeStyle=C.grid; g.lineWidth=1; g.beginPath();
+  for(var x=0;x<f.w;x+=step){ g.moveTo(x+.5,0); g.lineTo(x+.5,f.h); }
+  for(var y=0;y<f.h;y+=step){ g.moveTo(0,y+.5); g.lineTo(f.w,y+.5); }
+  g.stroke(); g.restore();
+}
+function V(f,x0,y0,x1,y1,pad){
+  pad = pad===undefined?26:pad;
+  var s=Math.min((f.w-pad*2)/(x1-x0),(f.h-pad*2)/(y1-y0));
+  var mx=(x0+x1)/2, my=(y0+y1)/2;
+  return {s:s, x0:x0, y0:y0, x1:x1, y1:y1,
+          X:function(u){return f.w/2+(u-mx)*s;},
+          Y:function(u){return f.h/2-(u-my)*s;},
+          S:function(u){return u*s;},
+          clip:function(){ f.g.save(); f.g.beginPath(); f.g.rect(0,0,f.w,f.h); f.g.clip(); },
+          unclip:function(){ f.g.restore(); }};
+}
+function ease(x){ return x<0.5 ? 2*x*x : 1-Math.pow(-2*x+2,2)/2; }
+/* stretched "map" view: x and y get independent scales so the drawing fills the
+   canvas. Dots and rings are drawn in pixel space, so they stay perfectly round;
+   only positions spread. Use V() when distances must read true. */
+function VX(f,x0,y0,x1,y1,pad){
+  pad = pad===undefined?26:pad;
+  var sx=(f.w-pad*2)/(x1-x0), sy=(f.h-pad*2)/(y1-y0);
+  var mx=(x0+x1)/2, my=(y0+y1)/2, sm=Math.sqrt(sx*sy);
+  return {s:sm, sx:sx, sy:sy, x0:x0, y0:y0, x1:x1, y1:y1,
+          X:function(u){return f.w/2+(u-mx)*sx;}, Y:function(u){return f.h/2-(u-my)*sy;},
+          S:function(u){return u*sm;},
+          clip:function(){ f.g.save(); f.g.beginPath(); f.g.rect(0,0,f.w,f.h); f.g.clip(); },
+          unclip:function(){ f.g.restore(); }};
+}
+function sci(v){ var e=v.toExponential(2); return e; }
+function lcg(seed){ var s=seed>>>0; return function(){ s=(s*1103515245+12345)&0x7fffffff; return s/0x7fffffff; }; }
+/* log-scaled axis: maps value v in [lo,hi] to pixels across [p0,p1] (p1 > p0) */
+function lmap(v,lo,hi,p0,p1){
+  if(!(v>0)) v=lo;
+  var a=Math.log(lo), b=Math.log(hi), u=Math.log(v);
+  if(u<a) u=a; if(u>b) u=b;
+  return p0+(u-a)/(b-a)*(p1-p0);
+}
+
+/* =============================================================== engine */
+function B(m,r,c,x,y,vx,vy,q){ return {m:m,r:r,c:c,x:x,y:y,vx:vx,vy:vy,q:q||0,ax:0,ay:0}; }
+function WA(list,opt){ list.pulses=[]; list.qOn=!(opt&&opt.q===false); return list; }
+function substep(A,h){
+  var n=A.length,i,j,o,p;
+  for(i=0;i<n;i++){
+    o=A[i]; var ax=0,ay=0;
+    for(j=0;j<n;j++){
+      if(j===i) continue; p=A[j];
+      var dx=p.x-o.x, dy=p.y-o.y, d=Math.sqrt(dx*dx+dy*dy);
+      if(d<=o.r+p.r) continue;
+      var sgn=(o.c===p.c)?1:-1, am=sgn*p.m/(d*d*d);
+      ax+=am*dx/d; ay+=am*dy/d;
+    }
+    if(A.qOn){ ax+=-K.KQ*o.q*o.x; ay+=-K.KQ*o.q*o.y; }
+    o.ax=ax; o.ay=ay;
+  }
+  for(i=0;i<n;i++){
+    o=A[i]; var vx=o.vx, vy=o.vy, sp=Math.sqrt(vx*vx+vy*vy);
+    if(sp>0){ var k=h*(K.CD*sp/o.m+K.CF/sp); vx-=k*vx; vy-=k*vy; }
+    vx+=o.ax*h; vy+=o.ay*h;
+    if(Math.sqrt(vx*vx+vy*vy)>K.VT) o.q=Math.min(o.q+K.DQ*h,K.QMAX);
+    o.x+=vx*h; o.y+=vy*h; o.vx=vx; o.vy=vy;
+  }
+  for(i=0;i<n;i++) for(j=i+1;j<n;j++){
+    var a=A[i], b=A[j];
+    var bx=b.x-a.x, by=b.y-a.y, d=Math.sqrt(bx*bx+by*by), s=a.r+b.r;
+    if(d>0 && d<=s){
+      var t1=a.vx, t2=a.vy; a.vx=b.vx; a.vy=b.vy; b.vx=t1; b.vy=t2;
+      var pu=(s-d)/2, ux=bx/d, uy=by/d;
+      a.x-=ux*pu; a.y-=uy*pu; b.x+=ux*pu; b.y+=uy*pu;
+      A.pulses.push({x:(a.x+b.x)/2, y:(a.y+b.y)/2, t:0});
+    }
+  }
+  for(i=0;i<n;i++){
+    o=A[i];
+    if(o.x>K.W/2){ o.x=K.W/2; o.vx=-o.vx; }
+    if(o.y>K.WH/2){ o.y=K.WH/2; o.vy=-o.vy; }
+  }
+}
+function run(A,secs,h){ h=h||K.H; var n=Math.max(1,Math.round(secs/h)); for(var i=0;i<n;i++) substep(A,h); }
+function pulseTick(A){
+  for(var i=A.pulses.length-1;i>=0;i--){ A.pulses[i].t+=1; if(A.pulses[i].t>26) A.pulses.splice(i,1); }
+}
+function drawWorld(f,A,v,o){
+  o=o||{}; var g=f.g,i,j;
+  v.clip();
+  g.fillStyle='rgba(255,95,109,.09)';
+  g.fillRect(v.X(K.W/2),0,Math.max(0,v.X(v.x1)-v.X(K.W/2)),f.h);
+  g.fillRect(0,v.Y(K.WH/2),v.X(K.W/2),Math.max(0,f.h-v.Y(K.WH/2)));
+  g.save(); g.strokeStyle=C.grid; g.lineWidth=1; g.beginPath();
+  for(var x=Math.ceil(v.x0/10)*10;x<=v.x1;x+=10){ g.moveTo(v.X(x),0); g.lineTo(v.X(x),f.h); }
+  for(var y=Math.ceil(v.y0/10)*10;y<=v.y1;y+=10){ g.moveTo(0,v.Y(y)); g.lineTo(f.w,v.Y(y)); }
+  g.stroke(); g.restore();
+  if(o.links!==false) for(i=0;i<A.length;i++) for(j=i+1;j<A.length;j++){
+    var a=A[i],b=A[j],dx=b.x-a.x,dy=b.y-a.y,d=Math.sqrt(dx*dx+dy*dy);
+    if(d<=a.r+b.r||d>80) continue;
+    var F=Math.min(1,K.G*a.m*b.m/(d*d*d)*7), same=(a.c===b.c);
+    ln(g,v.X(a.x),v.Y(a.y),v.X(b.x),v.Y(b.y),
+       same?'rgba(90,216,255,'+(F*.5)+')':'rgba(255,106,213,'+(F*.5)+')', same?1:1.5, same?null:[4,4]);
+  }
+  for(i=A.pulses.length-1;i>=0;i--){ var pu=A.pulses[i];
+    circ(g,v.X(pu.x),v.Y(pu.y),4+pu.t*1.5,'rgba(255,255,255,'+Math.max(0,0.8-pu.t*0.03).toFixed(2)+')',1.6); }
+  for(i=0;i<A.length;i++){
+    var ob=A[i], cx=v.X(ob.x), cy=v.Y(ob.y), rr=Math.max(3,v.S(ob.r));
+    dot(g,cx,cy,rr,COL[ob.c]);
+    if(ob.q>0.01) circ(g,cx,cy,rr+5+ob.q*.55,'rgba(78,227,155,.85)',Math.max(1,ob.q*.3));
+    if(o.vel) arr(g,cx,cy,cx+ob.vx*v.s*.34,cy-ob.vy*v.s*.34,'rgba(255,255,255,.6)',1.3,5);
+  }
+  v.unclip();
+}
+
+/* ========================================================= scene registry */
+var SC={};
+
+/* ---------------------------------------------------------- 00 hero */
+SC.cHero=function(f,t){
+  var SEED=[[1.6,1.6,'red',8,10,4.2,2.6],[2.4,1.3,'blue',30,5,-3.6,4.4],
+            [1.1,2.2,'green',44,16,3.4,-3.8],[3.1,1.0,'red',14,40,-4.4,-2.6],
+            [0.9,1.7,'blue',38,42,4.0,2.2],[2.0,1.4,'green',22,26,-3.0,-4.2],
+            [1.4,1.8,'red',48,30,-3.8,1.6]];
+  if(!f.st){
+    f.st={A:WA([]), tt:0, acc:0, next:3.6, hits:0, seeded:false};
+    f.v=VX(f,-8,-8,58,58,26);
+  }
+  var s=f.st, v=f.v, g=f.g, dt=Math.min(.05,t.dt), i, guard=0;
+  if(!s.seeded || s.tt>=s.next){
+    s.A.length=0;
+    for(i=0;i<SEED.length;i++){ var q=SEED[i];
+      s.A.push(B(q[0],q[1],q[2],q[3],q[4],q[5],q[6],0)); }
+    s.seeded=true; s.next=s.tt+3.6; s.hits=0;
+  }
+  s.tt+=dt; s.acc+=dt;
+  var before=s.A.pulses.length;
+  while(s.acc>=K.H && guard<80){ substep(s.A,K.H); s.acc-=K.H; guard++; }
+  s.hits+=s.A.pulses.length-before;
+  pulseTick(s.A);
+  drawWorld(f,s.A,v,{links:true});
+  g.save(); g.strokeStyle=C.wall; g.lineWidth=2.6;
+  g.beginPath(); g.moveTo(v.X(50),0); g.lineTo(v.X(50),f.h);
+  g.moveTo(0,v.Y(50)); g.lineTo(f.w,v.Y(50)); g.stroke();
+  g.globalAlpha=.15; g.lineWidth=11; g.stroke(); g.restore();
+  T(g,'wall  y = H/2 = 50',14,v.Y(50)-9,'rgba(255,200,97,.95)',10.5,'left',600);
+  T(g,'wall  x = W/2 = 50',v.X(50)+9,v.Y(50)+18,'rgba(255,200,97,.95)',10.5,'left',600);
+  ln(g,v.X(0)-9,v.Y(0),v.X(0)+9,v.Y(0),'rgba(78,227,155,.6)',1.4);
+  ln(g,v.X(0),v.Y(0)-9,v.X(0),v.Y(0)+9,'rgba(78,227,155,.6)',1.4);
+  T(g,'origin (0,0)',v.X(0)-12,v.Y(0)-14,'rgba(78,227,155,.85)',10.5,'right');
+  T(g,'x < 0 and y < 0 are UNBOUNDED \u2014 there is no left wall and no floor',
+    14,22,'rgba(120,200,255,.6)',10.5,'left',600);
+  var q=0,nq=0,vsum=0,i2;
+  for(i2=0;i2<s.A.length;i2++){ q+=s.A[i2].q;
+    if(s.A[i2].q>=K.QMAX-0.001) nq++;
+    vsum+=Math.hypot(s.A[i2].vx,s.A[i2].vy); }
+  var bw=228,bh=122,bx=f.w-bw-14,by=f.h-bh-14;
+  box(g,bx,by,bw,bh,'rgba(4,6,11,.85)','rgba(90,216,255,.3)',9);
+  T(g,'LIVE TELEMETRY',bx+12,by+15,C.cy,9.5,'left',700);
+  var rows=[['sim time',s.tt.toFixed(2)+' s'],['bodies',String(s.A.length)],
+            ['mean speed',(vsum/s.A.length).toFixed(2)],['total q',q.toFixed(2)],
+            ['at q-max',nq+' of '+s.A.length],['collisions',String(s.hits)],
+            ['substep','h = 0.01 s']];
+  for(i2=0;i2<rows.length;i2++){
+    var ry=by+32+i2*13;
+    T(g,rows[i2][0],bx+12,ry,C.ink3,9.5,'left');
+    T(g,rows[i2][1],bx+bw-12,ry,C.ink,9.5,'right',700); }
+  var st=document.getElementById('stat');
+  if(st) st.textContent='27 experiments \u00b7 8 constants \u00b7 '+s.tt.toFixed(0)+' s simulated';
+};
+
+/* ---------------------------------------------------------- 00 setup */
+SC.cApi=function(f,t){
+  var g=f.g,W=f.w,H=f.h; bg(f); grid(f,34);
+  box(g,14,H/2-40,120,80,'rgba(90,216,255,.08)','rgba(90,216,255,.4)',10);
+  T(g,'client',74,H/2-22,C.cy,11,'center',700);
+  T(g,'python',74,H/2-4,C.ink3,10,'center');
+  box(g,W-134,H/2-40,120,80,'rgba(255,106,213,.08)','rgba(255,106,213,.4)',10);
+  T(g,'server',W-74,H/2-22,C.mg,11,'center',700);
+  T(g,':8765',W-74,H/2-4,C.ink3,10,'center');
+  var calls=[
+    ['GET  /health','{"status":"ok"}'],
+    ['GET  /','13 endpoints'],
+    ['GET  /schema','object + world fields'],
+    ['POST /worlds','{"world_id":"w2"}'],
+    ['POST .../objects','{"object_id":"o1"}'],
+    ['POST .../step','{dt}  \u2192 time advances'],
+    ['POST .../apply','impulse | force'],
+    ['GET  .../measure','noise=0 \u2192 exact'],
+    ['GET  /truth?confirm=true','withheld until the end']];
+  var cyc=t.t/2.1, step=Math.floor(cyc)%calls.length, ph=cyc%1;
+  var y0=30, rowH=(H-70)/calls.length, i;
+  for(i=0;i<calls.length;i++){
+    var y=y0+i*rowH+rowH/2, on=(i===step);
+    T(g,calls[i][0],150,y,on?C.cy:C.ink3,on?11:10,'left',on?700:400);
+    if(on){
+      var px=140+(W-300)*ph;
+      if(ph<0.55){ arr(g,px-36,y,px-8,y,'rgba(90,216,255,.55)',1.6,6); dot(g,px,y,4.5,C.cy,false); }
+      else { arr(g,px+36,y,px+8,y,'rgba(255,106,213,.55)',1.6,6); dot(g,px,y,4.5,C.mg,false); }
+      if(ph>0.62){
+        var al=Math.min(1,(ph-0.62)/0.22); g.globalAlpha=al;
+        T(g,calls[i][1],W-150,y,al>0.65?C.gr:C.ink2,10,'right');
+        g.globalAlpha=1;
+      }
+    }
+  }
+  box(g,150,H-26,W-300,20,'rgba(255,255,255,.03)','rgba(255,255,255,.1)',6);
+  T(g,'one variable at a time  \u2192  clone  \u2192  predict  \u2192  step  \u2192  measure(noise=0)',162,H-15,C.ink2,10.5);
+};
+
+SC.cObj=function(f,t){
+  var g=f.g,W=f.w,H=f.h; bg(f);
+  var cx=W*0.34, cy=H*0.5, R=Math.min(42,H*0.3);
+  dot(g,cx,cy,R,COL.red); circ(g,cx,cy,R,'rgba(255,255,255,.35)',1.5);
+  var L=cx-R-12, Rr=cx+R+12;
+  var rows=[['mass','1.6'],['radius','1.6'],['color','red'],['pos','(23.4, 11.0)']];
+  var rows2=[['vel','(7.8, 3.9)'],['q','3.4'],['alive','true']];
+  var i;
+  for(i=0;i<rows.length;i++){ var y=cy-52+i*30;
+    T(g,rows[i][0],L-10,y,C.ink3,10,'right'); T(g,rows[i][1],L-4,y,C.ink,11,'left',700); }
+  for(i=0;i<rows2.length;i++){ var y2=cy-38+i*38;
+    T(g,rows2[i][0],Rr+10,y2,C.ink3,10,'left');
+    T(g,rows2[i][1],Rr+4,y2,i===1?C.gr:C.ink,11,'right',700); }
+  ln(g,L+8,cy,Rr-8,cy,C.dim,1,[4,4]);
+  circ(g,cx,cy,R+12+Math.sin(t.t*2)*3,'rgba(78,227,155,.7)',2);
+  T(g,'q \u2014 latent charge, saturates at 10',W-12,16,C.gr,10,'right');
+  T(g,'pos is the body CENTRE (radii are only used for contacts)',12,H-12,C.ink3,10);
+};
+
+SC.cWorld=function(f,t){
+  var g=f.g,W=f.w,H=f.h; bg(f);
+  var m=30, w=W-m*2, h=H-m*2-18, ox=m-16, oy=m;
+  g.fillStyle='rgba(90,216,255,.06)'; g.fillRect(ox,oy,w,h);
+  g.strokeStyle='rgba(90,216,255,.35)'; g.lineWidth=1; g.strokeRect(ox+.5,oy+.5,w,h);
+  var mx=ox+w*0.42, my=oy+h*0.42;
+  g.save(); g.beginPath(); g.rect(ox,oy,w,h); g.clip();
+  g.fillStyle='rgba(255,95,109,.10)'; g.fillRect(mx,oy,w,h); g.fillRect(ox,my,w,h);
+  g.strokeStyle=C.wall; g.lineWidth=2.4;
+  g.beginPath(); g.moveTo(mx,oy); g.lineTo(mx,oy+h); g.moveTo(ox,my); g.lineTo(ox+w,my); g.stroke();
+  g.restore();
+  var cs=['red','blue','green'], i;
+  for(i=0;i<4;i++){ var a=t.t*0.8+i*1.57;
+    dot(g,mx+Math.cos(a)*w*.28,my+Math.sin(a)*h*.28,3.5,COL[cs[i]],false); }
+  dot(g,mx,my,4,C.gr);
+  T(g,'origin (0,0)',mx+8,my+12,C.gr,10);
+  T(g,'W/2',mx+6,oy+12,C.dimmer,11,'left',700);
+  T(g,'reported width = 100',ox+6,oy+h-8,C.ink3,10);
+  T(g,'domain is (-\u221e, W/2] \u00d7 (-\u221e, H/2]',m,H-8,C.am,11,'left',600);
+  T(g,'two walls only',W-m,H-8,C.rd,10,'right');
+};
+
+SC.cLoop=function(f,t){
+  var g=f.g,W=f.w,H=f.h; bg(f);
+  var steps=['spawn body','set ONE control','step(dt)','measure noise=0','record','plot'];
+  var cx=W/2, cy=H/2, r=Math.min(W,H)*0.31, n=steps.length, i;
+  for(i=0;i<n;i++){
+    var a=t.t*0.5+i/n*6.2832-Math.PI/2;
+    var a2=t.t*0.5+(i+1)/n*6.2832-Math.PI/2;
+    var x=cx+Math.cos(a)*r, y=cy+Math.sin(a)*r;
+    var act=Math.cos(a)>0.93;
+    box(g,x-42,y-21,84,42,act?'rgba(90,216,255,.18)':'rgba(255,255,255,.045)',act?C.cy:C.dim,8);
+    T(g,steps[i],x,y,act?C.cy:C.ink,10.5,'center',act?700:500);
+    arr(g,x+Math.cos(a)*46,y+Math.sin(a)*46,cx+Math.cos(a2)*46,cy+Math.sin(a2)*46,
+        act?'rgba(90,216,255,.6)':'rgba(255,255,255,.12)',1.4,5);
+  }
+  T(g,'repeat until the rebuilt world matches the server bit-for-bit',cx,H-10,C.ink2,10.5,'center');
+};
+
+/* ---------------------------------------------------------- A geometry */
+SC.cA0=function(f,t){
+  var g=f.g,W=f.w,H=f.h; bg(f); grid(f,26);
+  var x=W*0.5, y=H*0.5, step=Math.floor(t.t*1.2)%6, i;
+  for(i=0;i<6;i++) box(g,x-4+i*9-27,y-7,7,14, i<step?C.cy:'rgba(255,255,255,.1)', i<step?C.cy:C.dim, 1);
+  dot(g,x,y,7,'rgba(90,216,255,.5)'); circ(g,x,y,13,C.cy,1.5);
+  T(g,'t = '+step+' steps',18,20,C.cy,12,'left',700);
+  T(g,'pos (50.000000000000, 50.000000000000)',18,42,C.ink,11.5);
+  T(g,'vel (0.000000000000, 0.000000000000)',18,60,C.ink,11.5);
+  T(g,'q 0.0',18,78,C.ink,11.5);
+  arr(g,x+22,y,x+76,y,'rgba(255,95,109,.75)',1.8,8);
+  T(g,'gravity = 0',x+82,y,C.rd,11,'left',700);
+  arr(g,x-22,y,x-76,y,'rgba(255,95,109,.75)',1.8,8);
+  T(g,'no background force',x-82,y,C.rd,11,'right',700);
+};
+
+SC.cA1=function(f,t){
+  var g=f.g,W=f.w,H=f.h; bg(f); grid(f,30);
+  var v=VX(f,-26,-16,110,16,26), i;
+  ln(g,v.X(50),4,v.X(50),H-72,C.wall,2.4);
+  ln(g,v.X(50),4,v.X(50),H-72,'rgba(255,200,97,.14)',9);
+  T(g,'x = 50   (= W/2)',v.X(50)+9,16,C.dimmer,11.5,'left',700);
+  ln(g,6,v.Y(0),W-6,v.Y(0),C.dim,1,[3,3]);
+  T(g,'0',8,v.Y(0)-12,C.ink3,10);
+  var vals=[-20,-10,-5,0,5,10,20,40,49,50,51,60,90,105];
+  var ph=(t.t*0.45)%1, shown=Math.floor(ph*vals.length*1.3);
+  for(i=0;i<vals.length;i++){
+    var val=vals[i], on=i<shown, cl=val>50, up=(i%2===0);
+    var px=cl?v.X(50):v.X(val), yy=v.Y(0);
+    if(!on){ dot(g,v.X(val),yy,3.5,'rgba(255,255,255,.12)',false); continue; }
+    if(cl){
+      ln(g,v.X(val),yy,px,yy,'rgba(255,95,109,.7)',1.6,[2,2]);
+      dot(g,px,yy+0,7,COL.red);
+      T(g,String(val),px,yy+(up?-22:30),C.rd,10.5,'center',700);
+    }else{
+      dot(g,px,yy,7,val<0?COL.blue:C.gr);
+      T(g,String(val),px,yy+(up?-22:30),val<0?COL.blue:C.ink2,10.5,'center',700);
+    }
+  }
+  T(g,'negative x is left completely alone',v.X(-20),v.Y(0)-44,'rgba(86,168,255,.9)',10.5,'center',600);
+  T(g,'snapped to exactly 50',v.X(50),v.Y(0)-44,'rgba(255,95,109,.9)',10.5,'center',600);
+  var sizes=[[100,50],[200,100],[50,25],[37,18.5],[13,6.5],[1000,500]];
+  var by=H-42, slot=(W-30)/sizes.length, i2;
+  T(g,'the clamp follows the HALF-extent:',14,by-22,C.ink2,10.5,'left',600);
+  for(i2=0;i2<sizes.length;i2++){
+    var sw=sizes[i2][0], cl2=sizes[i2][1], x0=15+i2*slot, ww=slot-16;
+    ln(g,x0,by+8,x0+ww,by+8,'rgba(255,255,255,.2)',1);
+    ln(g,x0+(ww)*(cl2/sw),by+1,x0+(ww)*(cl2/sw),by+15,C.wall,2.4);
+    T(g,'W = '+sw,x0,by+30,C.ink3,10);
+    T(g,'clamp '+cl2,x0+ww,by+30,C.am,10,'right');
+  }
+};
+
+SC.cA2=function(f,t){
+  var g=f.g,W=f.w,H=f.h; bg(f); grid(f,30);
+  var v=VX(f,28,-14,62,42,26), rad=[0.2,1,5,20], i;
+  ln(g,v.X(50),4,v.X(50),H-4,C.wall,2.4);
+  T(g,'x = 50',v.X(50)-9,16,C.dimmer,11.5,'right',700);
+  for(i=0;i<4;i++){
+    var y=v.Y(38-i*12), p=Math.min(1,(t.t*0.42+i*0.25)%2);
+    var x=v.X(28+24*p), r=Math.max(3,Math.min(46,rad[i]*2.3));
+    var col=COL[['red','blue','green','red'][i]];
+    circ(g,x,y,r,col,2); dot(g,x,y,r*0.7,col);
+    T(g,'r = '+rad[i],18,y,C.ink2,11.5);
+    T(g,'centre clamps at 50',x+r+14,y,C.ink3,10.5);
+  }
+  T(g,'the wall bounds the CENTRE \u2014 radius is ignored, bodies overlap at the wall',
+    W/2,H-16,C.am,12,'center',600);
+};
+
+SC.cA3=function(f,t){
+  var g=f.g,W=f.w,H=f.h; bg(f); grid(f,20);
+  var v=VX(f,-16,-12,64,26,26);
+  ln(g,v.X(50),4,v.X(50),H-4,C.wall,2.4);
+  ln(g,v.X(0),4,v.X(0),H-4,C.dim,1.4,[5,4]);
+  T(g,'x = 0    (no wall here)',v.X(0)+10,18,C.ink3,11.5,'left',600);
+  T(g,'x = 50   (wall)',v.X(50)-10,18,C.dimmer,11.5,'right',700);
+  var ph=(t.t*0.32)%1;
+  var x=32-76*ph*ph;
+  dot(g,v.X(x),v.Y(10),8,COL.blue); circ(g,v.X(x),v.Y(10),15,'rgba(86,168,255,.4)',1.6);
+  arr(g,v.X(x)+18,v.Y(10),v.X(x)+18-56*ph,v.Y(10),'rgba(86,168,255,.75)',2.4,8);
+  T(g,'x = '+x.toFixed(2),v.X(x),v.Y(10)-30,x<0?COL.blue:C.ink2,11.5,'center',700);
+  if(x<0) T(g,'keeps going \u2014 unbounded',v.X(x)+22,v.Y(10)+26,C.rd,11,'left',600);
+  var x2=16+46*ph, hit=x2>50;
+  if(hit) x2=100-x2;
+  dot(g,v.X(x2),v.Y(22),8,COL.green);
+  arr(g,v.X(x2)-18,v.Y(22),v.X(x2)-18+56*ph,v.Y(22),'rgba(78,227,155,.7)',2.4,8);
+  T(g,'x = '+x2.toFixed(2),v.X(x2),v.Y(22)-30,C.ink2,11.5,'center',700);
+  if(hit) T(g,'bounces',v.X(x2)-22,v.Y(22)+26,C.gr,11,'right',600);
+};
+
+SC.cA4=function(f,t){
+  var g=f.g,W=f.w,H=f.h; bg(f); grid(f,20);
+  var v=VX(f,30,-6,58,26,26);
+  ln(g,v.X(50),4,v.X(50),H-4,C.wall,2.4);
+  T(g,'x = 50',v.X(50)-9,16,C.dimmer,11.5,'right',700);
+  var ph=(t.t*0.55)%1, sp=22;
+  var x=ph<0.5?30+sp*ph*2:50-(ph-0.5)*2*sp;
+  var vv=ph<0.5?sp:-sp;
+  dot(g,v.X(x),v.Y(10),11,COL.red); circ(g,v.X(x),v.Y(10),20,'rgba(255,95,109,.4)',1.8);
+  arr(g,v.X(x)-vv*1.4,v.Y(10),v.X(x)-vv*.25,v.Y(10),'rgba(255,150,255,.9)',2.6,11);
+  T(g,'v = '+vv.toFixed(1),v.X(x)-vv*1.45,v.Y(10)-20,'#ff9eff',12,'center',700);
+  var bx=v.X(30), bw=v.X(56)-v.X(30);
+  box(g,bx,H-52,bw,10,'rgba(255,255,255,.05)','rgba(255,255,255,.12)',4);
+  box(g,bx,H-52,bw,10,'rgba(255,95,109,.45)',null,4);
+  T(g,'|v| = 22 in',bx,H-64,C.ink3,10.5);
+  T(g,'|v| = 22 out   \u2192   e = 1',bx+bw,H-64,C.gr,11,'right',700);
+  T(g,'v_out = \u2212(v_in \u2212 0.5v\u00b2\u00b7h/m \u2212 0.3h) = \u2212(10 \u2212 0.5 \u2212 0.003) = \u22129.497',
+    W/2,26,C.am,12,'center',600);
+  T(g,'perfectly elastic \u2014 not one digit is lost in the reflection',
+    W/2,H-16,C.ink2,11.5,'center');
+};
+
+SC.cA5=function(f,t){
+  var g=f.g,W=f.w,H=f.h; bg(f); grid(f,20);
+  var v=V(f,30,-6,56,22,26), i;
+  ln(g,v.X(50),4,v.X(50),H-4,C.wall,2.4);
+  var tickW=(W-60)/10, x0=30, k=Math.floor((t.t*3.2)%10);
+  box(g,x0-4,H-26,tickW*10+8,14,'rgba(90,216,255,.12)','rgba(90,216,255,.35)',5);
+  T(g,'one step(dt = 0.1)  =  10 substeps',x0+tickW*5,H-40,C.cy,11,'center',700);
+  for(i=0;i<10;i++){
+    var on=i<=k;
+    box(g,x0+i*tickW-9,H-26,18,14,on?C.cy:'rgba(255,255,255,.05)',on?C.cy:C.dim,3);
+    T(g,String(i+1),x0+i*tickW,H-19,'#04060c',9,'center',700);
+  }
+  var sub=(t.t*3.2)%10;
+  var adv=Math.min(9,k+(sub-k>0?0.9:0));
+  var px=32+adv*2.0;
+  if(px>50) px=100-px;
+  dot(g,v.X(px),v.Y(8),7,COL.red);
+  if(k>=5) T(g,'the bounce happens INSIDE the single call',v.X(px)-16,v.Y(8)-24,C.gr,10.5,'right',600);
+  T(g,'1 \u00d7 step(0.1) is bit-identical to 10 \u00d7 step(0.01) \u2192 the wall is resolved every substep',
+    W/2,H-10,C.cy,11,'center',600);
+};
+
+/* ---------------------------------------------------------- B drag */
+var BD=[[0.5,0.00425],[1,0.008],[2,0.023],[5,0.128],[10,0.503],[20,2.003],[50,12.503],[100,50.003]];
+
+
+SC.cB1=function(f,t){
+  var g=f.g,W=f.w,H=f.h; bg(f);
+  var L=58,R=28,Tp=48,B=72, LO=0.001, HI=100, i;
+  var LY=function(v){ return lmap(v,LO,HI,H-B,Tp); };
+  var ticks=[0.001,0.01,0.1,1,10,100];
+  for(i=0;i<ticks.length;i++){ var yy=LY(ticks[i]);
+    ln(g,L,yy,W-R,yy,C.grid,1);
+    T(g,String(ticks[i]),L-8,yy,C.ink3,9.5,'right'); }
+  ln(g,L,H-B,W-R,H-B,C.ink3,1);
+  var yFloor=LY(0.003);
+  ln(g,L,yFloor,W-R,yFloor,'rgba(255,200,97,.5)',1,[6,4]);
+  T(g,'0.003 \u2014 identical at every speed',W-R,yFloor-14,C.am,10.5,'right',600);
+  var slot=(W-L-R)/BD.length, bw=slot*0.6;
+  for(i=0;i<BD.length;i++){
+    var vin=BD[i][0], dv=BD[i][1];
+    var x=L+slot*i+slot*0.2;
+    var pop=Math.min(1,Math.max(0,(t.t*0.75-i*0.22)%7)/0.7);
+    var yTop=LY(dv*pop), yF=LY(0.003*pop);
+    box(g,x,yTop,bw,Math.max(0.5,yF-yTop),'rgba(255,106,213,.6)',null,2);
+    box(g,x,yF,bw,Math.max(0.5,H-B-yF),'rgba(255,200,97,.85)',null,2);
+    T(g,String(vin),x+bw/2,H-B+16,C.ink2,10.5,'center');
+    if(pop>.95) T(g,dv.toFixed(3),x+bw/2,yTop-13,'#ffe2a8',9.5,'center');
+  }
+  T(g,'v_in',W-R,H-B+16,C.ink3,10,'right');
+  T(g,'|\\u0394v| per substep  (h = 0.01, m = 1)   \u2014   log scale',L,14,C.ink2,10.5,'left',600);
+  T(g,'the axis is logarithmic, so the amber floor stays the same height at every speed',
+    L,H-46,C.ink3,10.5);
+  box(g,L,H-26,11,11,'rgba(255,106,213,.6)',null,2);
+  T(g,'0.5 v\\u00b2 h / m   mass-dependent',L+17,H-20,C.ink2,10.5);
+  box(g,L+246,H-26,11,11,'rgba(255,200,97,.85)',null,2);
+  T(g,'0.3 h = 0.003   mass-INdependent',L+263,H-20,C.ink2,10.5);
+};
+
+SC.cB2=function(f,t){
+  var g=f.g,W=f.w,H=f.h; bg(f);
+  var L=66,R=30,Tp=62,B=74;
+  var MX0=0.2,MX1=400, DY0=0.0015,DY1=4;
+  function LX(m){ return lmap(m,MX0,MX1,L,W-R); }
+  function LY(dv){ return lmap(dv,DY0,DY1,H-B,Tp); }
+  var mt=[0.25,0.5,1,2,4,8,16,32,64,128,256], i,k;
+  for(i=0;i<mt.length;i++){ var gx=LX(mt[i]);
+    ln(g,gx,Tp,gx,H-B,C.grid,1); T(g,String(mt[i]),gx,H-B+16,C.ink3,9.5,'center'); }
+  var dy=[0.002,0.005,0.01,0.05,0.1,0.5,1,2,4], labs=['0.002','0.005','0.01','0.05','0.1','0.5','1','2','4'];
+  for(i=0;i<dy.length;i++){ var gy=LY(dy[i]);
+    ln(g,L,gy,W-R,gy,C.grid,1); T(g,labs[i],L-8,gy,C.ink3,9.5,'right'); }
+  ln(g,L,H-B,W-R,H-B,C.ink3,1);
+  T(g,'|\\u0394v|',L-6,Tp-14,C.ink3,10,'right',600);
+  T(g,'mass  m',W-R,H-B+16,C.ink3,10,'right');
+  for(k=0;k<220;k++){
+    var m1=0.2*Math.pow(2000,k/220), m2=0.2*Math.pow(2000,(k+1)/220);
+    var q1=0.5/m1, q2=0.5/m2;
+    ln(g,LX(m1),LY(q1),LX(m2),LY(q2),'rgba(255,106,213,.85)',1.8);
+    ln(g,LX(m1),LY(q1+0.003),LX(m2),LY(q2+0.003),'rgba(255,200,97,.9)',1.8);
+  }
+  var obs=[[0.25,2.003],[0.5,1.003],[1,0.503],[2,0.253],[4,0.128],[8,0.0655],[16,0.03425],[64,0.01081],[256,0.00495]];
+  for(i=0;i<obs.length;i++){
+    var app=Math.min(1,Math.max(0,(t.t*0.8-i*0.2)%7)/0.6);
+    if(app<=0) continue;
+    dot(g,LX(obs[i][0]),LY(obs[i][1]),5.5*app,'#ffffff',false);
+    circ(g,LX(obs[i][0]),LY(obs[i][1]),7.5,'rgba(4,6,11,.9)',1.6);
+    if(app>.95) T(g,obs[i][1].toFixed(5),LX(obs[i][0]),LY(obs[i][1])-15,C.ink,9.5,'center');
+  }
+  T(g,'v_in = 10 held fixed, h = 0.01',L,14,C.ink2,10.5,'left',600);
+  var lx=L;
+  box(g,lx,Tp-40,11,11,'#ffffff','rgba(255,255,255,.4)',2);
+  T(g,'measured',lx+17,Tp-34,C.ink,10.5);
+  ln(g,lx+92,Tp-40,lx+118,Tp-34,'rgba(255,106,213,.9)',2.4);
+  T(g,'0.5 v\\u00b2 h / m',lx+124,Tp-34,C.mg,10.5);
+  ln(g,lx+252,Tp-40,lx+278,Tp-34,'rgba(255,200,97,.95)',2.4);
+  T(g,'+ 0.003',lx+284,Tp-34,C.am,10.5);
+  T(g,'\\u0394v = 0.5 v\\u00b2 h / m  +  0.003',W/2,H-30,C.cy,12.5,'center',700);
+  T(g,'the vertical gap between the two curves is 0.003 at EVERY mass',
+    W/2,H-12,C.gr,11,'center',600);
+};
+
+SC.cB3=function(f,t){
+  var g=f.g,W=f.w,H=f.h; bg(f);
+  var ys=[0.5,1,2,3,5,10,20,30,40,50], i;
+  var ph=(t.t*1.1)%1;
+  var rowH=(H-96)/ys.length;
+  for(i=0;i<ys.length;i++){
+    var y=42+i*rowH;
+    T(g,'y = '+ys[i],12,y,C.ink3,10.5,'right');
+    var x=70+ph*80;
+    dot(g,x,y,5.5,COL.red);
+    arr(g,x+15,y,x+70,y,'rgba(255,200,97,.9)',2.4,8);
+    if(ph>0.7) T(g,'\u0394v/h = 0.8',x+80,y,C.am,10,'left',600);
+  }
+  T(g,'same speed at ten different heights \u2014 identical deceleration  0.5\u00b71\u00b2/1 + 0.3 = 0.8',
+    W/2,H-10,C.gr,11,'center',600);
+};
+
+SC.cB4=function(f,t){
+  var g=f.g,W=f.w,H=f.h; bg(f);
+  var cx=W*0.40, cy=H*0.5, k=Math.min(W,H)*0.30/8.944, sp=Math.sqrt(80);
+  var vx=cx+8*k*8, vy=cy-4*k*8;
+  arr(g,cx,cy,vx,vy,C.cy,3,11);
+  T(g,'v = (8, -4)',(cx+vx)/2+12,(cy+vy)/2-12,C.cy,12,'center',700);
+  var total=(0.5*sp/2+0.3/sp)*0.01*8.944*k*8;
+  var qx=(0.5*sp/2)*0.01*8.944*k*8, fx=total-qx;
+  arr(g,vx,vy,vx-total*7.2,vy+total*3.6,C.mg,2.4,9);
+  T(g,'drag + floor',(vx+vx-total*6.6)/2-6,(vy+vy+total*3.3)/2+18,C.mg,11.5,'center',600);
+  arr(g,vx,vy,vx-qx*7.2,vy+qx*3.6,'rgba(255,106,213,.4)',2,8);
+  T(g,'0.5|v|v/m',(vx+vx-qx*6.6)/2+16,(vy+vy+qx*3.3)/2-16,'rgba(255,106,213,.8)',10,'center');
+  arr(g,vx,vy,vx-fx*7.2,vy+fx*3.6,C.am,2.4,8);
+  T(g,'0.3 v\u0302',(vx+vx-fx*6.6)/2-10,(vy+vy+fx*3.3)/2+20,C.am,11,'center',600);
+  dot(g,vx,vy,4.5,C.ink);
+  dot(g,cx,cy,3.5,C.ink3);
+  T(g,'both brakes act along \u2212v\u0302, not per axis',W/2,H-28,C.gr,11.5,'center',600);
+  T(g,'\u0394v = \u2212h(0.5|v|/m + 0.3) v/|v|  =  (\u22120.1068, \u22120.0534)',W/2,H-10,C.ink2,11,'center');
+};
+
+
+
+SC.cB5=function(f,t){
+  var g=f.g,W=f.w,H=f.h; bg(f);
+  var L=64,R=26,Tp=42,B=72;
+  var series=[{v0:0.001,c:C.am,n:'v = 0.001',dy:-13},
+              {v0:0.01,c:C.mg,n:'v = 0.01',dy:15},
+              {v0:10,c:C.gr,n:'v = 10',dy:-13}];
+  var LO=0.0002, HI=20, maxT=20, s,i,j;
+  function LX(k){ return L+k/maxT*(W-L-R); }
+  function LY(a){ return lmap(a,LO,HI,H-B,Tp); }
+  var ticks=[0.001,0.01,0.1,1,10], labs=['0.001','0.01','0.1','1','10'];
+  for(i=0;i<ticks.length;i++){ var gy=LY(ticks[i]);
+    ln(g,L,gy,W-R,gy,C.grid,1); T(g,labs[i],L-8,gy,C.ink3,9.5,'right'); }
+  ln(g,L,H-B,W-R,H-B,C.ink3,1);
+  for(i=0;i<=maxT;i+=5) T(g,String(i),LX(i),H-B+16,C.ink3,9.5,'center');
+  T(g,'substep',W-R,H-B+16,C.ink3,10,'right');
+  var yg=LY(0.003);
+  ln(g,L,yg,W-R,yg,'rgba(255,255,255,.18)',1,[4,4]);
+  T(g,'the 0.3\\u00b7h brake',W-R,yg-13,C.ink2,10,'right',600);
+  var head=(t.t*6)%(maxT+2);
+  for(s=0;s<series.length;s++){
+    var S=series[s], vv=S.v0, pts=[];
+    for(i=0;i<=maxT;i++){
+      pts.push([LX(i),LY(Math.abs(vv))]);
+      var sp=Math.abs(vv), sg=(vv>0?1:(vv<0?-1:0));
+      vv=vv-(0.5*sp*sp*0.01+0.3*0.01*sg);
+    }
+    for(i=0;i<pts.length-1;i++) ln(g,pts[i][0],pts[i][1],pts[i+1][0],pts[i+1][1],S.c,2);
+    var hi=Math.min(pts.length-1,Math.floor(head));
+    dot(g,pts[hi][0],pts[hi][1],5,S.c);
+    T(g,S.n,pts[hi][0]+10,pts[hi][1]+S.dy,S.c,10.5,'left',700);
+  }
+  T(g,'|v| after each substep  \u2014  log scale',L,14,C.ink2,10.5,'left',600);
+  T(g,'below 0.3\\u00b7h = 0.003 the brake overshoots \u2192 the sign flips every substep',
+    W/2,H-36,C.rd,11.5,'center',600);
+  T(g,'0.001 \u2192 +0.001000074996        0.01 \u2192 \u22120.002000784854        10 \u2192 6.5775 (monotone)',
+    W/2,H-14,C.ink2,10.5,'center');
+};
+
+SC.cB6=function(f,t){
+  var g=f.g,W=f.w,H=f.h; bg(f); grid(f,26);
+  var v=VX(f,4.76,4.90,5.06,5.12,34), i;
+  var y=v.Y(5.02), x=v.X(5);
+  ln(g,v.X(4.76),y,v.X(5.06),y,'rgba(255,255,255,.14)',1);
+  for(i=0;i<8;i++){ var tx=v.X(4.77+i*0.04);
+    ln(g,tx,y-7,tx,y+7,C.dim,1);
+    T(g,(4.77+i*0.04).toFixed(2),tx,y+18,C.ink3,9.5,'center'); }
+  var good=4.82003, bad=5-0.2*0.01;
+  dot(g,x,y,11,'rgba(90,216,255,.4)'); circ(g,x,y,18,'rgba(90,216,255,.45)',1.6);
+  dot(g,v.X(good),y,9,COL.green); circ(g,v.X(good),y,18,'rgba(78,227,155,.55)',1.6);
+  dot(g,v.X(bad),y,8,COL.red);   circ(g,v.X(bad),y,17,'rgba(255,95,109,.45)',1.6,[5,4]);
+  arr(g,x,y,v.X(good)-20,y,'rgba(78,227,155,.8)',2.4,10);
+  arr(g,x,y,v.X(bad)+20,y,'rgba(255,95,109,.6)',2,10);
+  T(g,'5 \u2212 17.997 \u00d7 0.01 = 4.82003',W/2,24,C.gr,12.5,'center',700);
+  T(g,'start  5.00000',x,y-64,C.cy,11.5,'center',700);
+  T(g,'4.82003',v.X(good),y-64,C.gr,12,'center',700);
+  T(g,'x += v_new \u00b7 h',v.X(good),y-46,C.gr,10.5,'center');
+  T(g,'4.99800',v.X(bad),y+66,C.rd,12,'center',700);
+  T(g,'x += v_old \u00b7 h',v.X(bad),y+86,C.rd,10.5,'center');
+  T(g,'the update is x \u2190 x + h\u00b7v_after_everything  \u2014  semi-implicit (symplectic) Euler',
+    W/2,H-18,C.cy,12,'center',600);
+};
+
+
+/* ---------------------------------------------------------- C pair force */
+SC.cC1=function(f,t){
+  var g=f.g,W=f.w,H=f.h; bg(f);
+  var L=68,R=30,Tp=74,B=56;
+  var DX0=2,DX1=100, DY0=1e-5,DY1=1e-1;
+  function LX(d){ return lmap(d,DX0,DX1,L,W-R); }
+  function LY(a){ return lmap(a,DY0,DY1,H-B,Tp); }
+  var dx=[2.5,5,10,20,40,80], dy=[0.1,0.01,0.001,0.0001,0.00001], i,k;
+  for(i=0;i<dx.length;i++){ var gx=LX(dx[i]);
+    ln(g,gx,Tp,gx,H-B,C.grid,1); T(g,String(dx[i]),gx,H-B+16,C.ink3,9.5,'center'); }
+  var dyl=['0.1','0.01','0.001','1e-5','1e-6'];
+  for(i=0;i<dy.length;i++){ var gy=LY(dy[i]);
+    ln(g,L,gy,W-R,gy,C.grid,1); T(g,dyl[i],L-8,gy,C.ink3,9.5,'right'); }
+  ln(g,L,H-B,W-R,H-B,C.ink3,1);
+  T(g,'|a|',L-6,Tp-14,C.ink3,10.5,'right',600);
+  T(g,'centre distance d',W-R,H-B+16,C.ink3,10,'right');
+  for(k=0;k<200;k++){
+    var d1=DX0*Math.pow(DX1/DX0,k/200), d2=DX0*Math.pow(DX1/DX0,(k+1)/200);
+    ln(g,LX(d1),LY(1/(d1*d1*d1)),LX(d2),LY(1/(d2*d2*d2)),C.cy,2.4);
+    var e1=DX0*Math.pow(DX1/DX0,k/200), e2=DX0*Math.pow(DX1/DX0,(k+1)/200);
+    ln(g,LX(e1),LY(1/(e1*e1)),LX(e2),LY(1/(e2*e2)),'rgba(255,95,109,.6)',1.8,[6,5]);
+  }
+  T(g,'1/d\u00b3 \u2014 the alien law',LX(2.8),LY(1/21.95)+34,C.cy,12,'left',700);
+  T(g,'1/d\u00b2 \u2014 Earth',LX(26),LY(1/676)+26,'rgba(255,95,109,.95)',11.5,'left');
+  var ds=[2.5,3.5,5,7,10,14,20,28,40,56,80];
+  for(i=0;i<ds.length;i++){
+    var dd=ds[i], a=1/(dd*dd*dd);
+    var app=Math.min(1,Math.max(0,(t.t*0.9-i*0.2)%7)/0.6);
+    if(app<=0) continue;
+    dot(g,LX(dd),LY(a),5.5*app,'#ffffff',false);
+    circ(g,LX(dd),LY(a),7.5*app,'rgba(4,6,11,.95)',1.6);
+  }
+  T(g,'log\u2013log: both curves are straight, but only one passes through the data',
+    L,18,C.ink2,10.5,'left',600);
+  T(g,'|a| \u00d7 d\u00b3 = 1.000000 at every distance   \u2192   the law is 1/d\u00b3',
+    L,H-36,C.cy,12.5,'left',700);
+  T(g,'the white dots are the measured values \u2014 they sit on the 1/d\u00b3 line, nowhere near 1/d\u00b2',
+    L,H-14,C.ink3,10.5,'left');
+};
+
+SC.cC2=function(f,t){
+  var g=f.g,W=f.w,H=f.h; bg(f);
+  var ratios=[[1,1],[2,1],[4,1],[10,1],[1,10],[100,1],[1,100]];
+  var idx=Math.floor(t.t*0.8)%ratios.length, R2=ratios[idx];
+  var cx=W/2, cy=H*0.48, sep=Math.min(W*0.26,330);
+  var x1=cx-sep/2, x2=cx+sep/2;
+  circ(g,x1,cy,24,COL.blue,2); dot(g,x1,cy,16,COL.blue);
+  circ(g,x2,cy,17,COL.red,2);  dot(g,x2,cy,11,COL.red);
+  ln(g,x1+26,cy,x2-19,cy,'rgba(255,255,255,.13)',1,[5,4]);
+  T(g,'d = 10',cx,cy-52,C.ink2,11,'center',600);
+  var a1=26+R2[1]*16, a2=26+R2[0]*16;
+  if(a1>150) a1=150; if(a2>150) a2=150;
+  arr(g,x1+26,cy,x1+26+a1,cy,'rgba(255,200,97,.95)',3,11);
+  arr(g,x2-22,cy,x2-22-a2,cy,'rgba(255,200,97,.95)',3,11);
+  T(g,'a\u2081',x1+26+a1+10,cy,C.am,12,'left',700);
+  T(g,'a\u2082',x2-22-a2-10,cy,C.am,12,'right',700);
+  T(g,'m\u2081 = '+R2[0],x1,cy+56,COL.blue,12.5,'center',700);
+  T(g,'m\u2082 = '+R2[1],x2,cy+48,COL.red,12.5,'center',700);
+  T(g,'\u223f m\u2082',x1,cy+76,C.am,11,'center');
+  T(g,'\u223f m\u2081',x2,cy+76,C.am,11,'center');
+  T(g,'|F| = G\u00b7m\u2081m\u2082 / d\u00b3 is the SAME on both bodies  \u2192  equal and opposite',
+    cx,cy-88,C.gr,12.5,'center',600);
+  T(g,'a\u2081m\u2081 = \u2212a\u2082m\u2082      \u2022      a body never feels its OWN mass',
+    cx,H-42,C.ink2,11.5,'center');
+  T(g,'cycle:  1:1  \u2192  2:1  \u2192  4:1  \u2192  10:1  \u2192  1:10  \u2192  100:1  \u2192  1:100',
+    cx,H-18,C.ink3,10.5,'center');
+};
+
+SC.cC3=function(f,t){
+  var g=f.g,W=f.w,H=f.h; bg(f);
+  var nm=['red','blue','green'], cl=[COL.red,COL.blue,COL.green];
+  var cw=(W-40)/3, ch=(H-58)/3, i,j;
+  for(i=0;i<3;i++) for(j=0;j<3;j++){
+    var ox=20+cw*i, oy=28+ch*j, same=(i===j);
+    box(g,ox+3,oy+3,cw-6,ch-6,'rgba(255,255,255,.03)',
+        same?'rgba(78,227,155,.3)':'rgba(255,106,213,.3)',9);
+    T(g,nm[i],ox+13,oy+16,cl[i],11,'left',700);
+    T(g,nm[j],ox+cw-13,oy+16,cl[j],11,'right',700);
+    var ph=(t.t*0.9+i*0.13+j*0.07)%1;
+    var sep=same?(30-22*ph):(30+24*ph);
+    var mid=ox+cw/2, yy=oy+ch/2+2, d1=Math.max(2.4,sep/2), d2=Math.max(2.4,sep/2);
+    dot(g,mid-d1,yy,4,cl[i],false); dot(g,mid+d2,yy,4,cl[j],false);
+    if(same){
+      arr(g,mid-d1,yy-17,mid-d1+9,yy-11,'rgba(78,227,155,.85)',1.7,6);
+      arr(g,mid+d2,yy-17,mid+d2-9,yy-11,'rgba(78,227,155,.85)',1.7,6);
+      T(g,'ATTRACT',mid,yy+25,'rgba(78,227,155,.95)',10.5,'center',700);
+      T(g,'a = +1/d\u00b3',mid,yy+40,C.ink3,9.5,'center');
+    }else{
+      arr(g,mid-d1,yy-17,mid-d1-9,yy-11,'rgba(255,106,213,.85)',1.7,6);
+      arr(g,mid+d2,yy-17,mid+d2+9,yy-11,'rgba(255,106,213,.85)',1.7,6);
+      T(g,'REPEL',mid,yy+25,'rgba(255,106,213,.95)',10.5,'center',700);
+      T(g,'a = \u22121/d\u00b3',mid,yy+40,C.ink3,9.5,'center');
+    }
+  }
+};
+
+SC.cC4=function(f,t){
+  var g=f.g,W=f.w,H=f.h; bg(f);
+  var cy=H*0.40, cx=W*0.32, gap=Math.min(W*0.40,300);
+  var pairs=[[0.5,0.5],[1,1],[2,2],[3,1]];
+  var idx=Math.floor(t.t*1.1)%pairs.length, pr=pairs[idx];
+  var x1=cx-gap/2, x2=cx+gap/2;
+  var r1=Math.max(9,pr[0]*22), r2=Math.max(9,pr[1]*22);
+  circ(g,x1,cy,r1,COL.green,2.4); dot(g,x1,cy,r1*0.3,COL.green);
+  circ(g,x2,cy,r2,COL.green,2.4); dot(g,x2,cy,r2*0.3,COL.green);
+  ln(g,x1,cy-r1-52,x2,cy-r1-52,C.am,1.6,[6,5]);
+  ln(g,x1,cy-r1-60,x1,cy-r1-44,C.am,1.6);
+  ln(g,x2,cy-r1-60,x2,cy-r1-44,C.am,1.6);
+  T(g,'d = 10  (centre to centre)',cx,cy-r1-70,C.am,12,'center',600);
+  arr(g,x1+r1+14,cy,x1+r1+94,cy,C.am,2.8,10);
+  arr(g,x2-r2-14,cy,x2-r2-94,cy,C.am,2.8,10);
+  T(g,'a = 0.001',x1+r1+104,cy,C.am,11.5,'left',700);
+  T(g,'r = '+pr[0],x1,cy+r1+22,C.ink,12,'center',700);
+  T(g,'r = '+pr[1],x2,cy+r2+22,C.ink,12,'center',700);
+  T(g,'radius pairs cycled:  (0.5, 0.5)  \u2192  (1, 1)  \u2192  (2, 2)  \u2192  (3, 1)   \u2014   a = 0.001 every time',
+    W/2,H-42,C.gr,12,'center',600);
+  T(g,'the law uses the centre-to-centre distance, never a surface gap   \u00b7   and there is no cut-off',
+    W/2,H-18,C.ink3,11,'center');
+};
+
+/* ---------------------------------------------------------- D collisions */
+SC.cD1=function(f,t){
+  var g=f.g,W=f.w,H=f.h; bg(f);
+  var ratios=[[1,1],[4,1],[10,1],[100,1],[1,100]];
+  var idx=Math.floor(t.t*0.9)%ratios.length, R2=ratios[idx];
+  var cy=H*0.42, cx=W/2, rr=[14,8], gap=Math.min(W*0.4,280);
+  var ph=(t.t*0.9)%1, v1=0.5, v2=-0.3;
+  var x1=cx-gap/2+v1*30*ph, x2=cx+gap/2+v2*30*ph, hit=false;
+  if(Math.abs(x2-x1)<rr[0]+rr[1]){
+    var sgn=Math.sign(x2-x1)||1;
+    x1=x2-sgn*(rr[0]+rr[1]);
+    var a=v1; v1=v2; v2=a; hit=true;
+  }
+  circ(g,x1,cy,rr[0],COL.blue,2); dot(g,x1,cy,rr[0]*0.7,COL.blue,false);
+  circ(g,x2,cy,rr[1],COL.red,2);  dot(g,x2,cy,rr[1]*0.7,COL.red,false);
+  arr(g,x1,cy-rr[0]-24,x1+v1*30,cy-rr[0]-24,C.cy,2.4,8);
+  arr(g,x2,cy-rr[1]-24,x2+v2*30,cy-rr[1]-24,C.cy,2.4,8);
+  T(g,'v\u2081',x1+v1*15,cy-rr[0]-40,C.cy,10.5,'center',700);
+  T(g,'v\u2082',x2+v2*15,cy-rr[1]-40,C.cy,10.5,'center',700);
+  if(hit){
+    circ(g,(x1+x2)/2,cy,rr[0]+rr[1]+12,C.gr,2,[3,3]);
+    T(g,'SWAP',(x1+x2)/2,cy+rr[0]+38,C.gr,12.5,'center',700);
+  }
+  T(g,'m\u2081 = '+R2[0],x1,cy+rr[0]+22,COL.blue,11.5,'center',700);
+  T(g,'m\u2082 = '+R2[1],x2,cy+rr[1]+22,COL.red,11.5,'center',700);
+  T(g,'mass ratio '+R2[0]+' : '+R2[1]+'   \u2014   the velocities still swap exactly',
+    cx,H-24,C.am,11.5,'center',600);
+  T(g,'neither momentum nor kinetic energy is conserved',cx,H-8,C.ink3,10.5,'center');
+};
+
+SC.cD2=function(f,t){
+  var g=f.g,W=f.w,H=f.h; bg(f);
+  var cx=W/2, cy=H*0.40, R=Math.min(W,H)*0.26, sc=R*0.0001;
+  var va={x:0.2,y:0.05}, vb={x:-0.1,y:0.02};
+  var a={x:cx,y:cy,r:15,c:'red'}, b={x:cx+R*0.6,y:cy-R*0.3,r:15,c:'blue'};
+  var ph=(t.t*0.8)%1, hit=false;
+  var dx=b.x-a.x, dy=b.y-a.y, d=Math.sqrt(dx*dx+dy*dy), s=a.r+b.r+26;
+  var tHit=1-(s-d)/d;
+  if(ph<tHit){ b.x=a.x+(s+30)*dx/d; b.y=a.y+(s+30)*dy/d; }
+  else { hit=true; var tmp=va; va=vb; vb=tmp; }
+  dot(g,a.x,a.y,11,COL.red,false); circ(g,a.x,a.y,15,COL.red,2);
+  dot(g,b.x,b.y,11,COL.blue,false); circ(g,b.x,b.y,15,COL.blue,2);
+  arr(g,a.x,a.y,a.x+va.x*sc*3.6,a.y-va.y*sc*3.6,C.cy,2.6,9);
+  arr(g,b.x,b.y,b.x+vb.x*sc*3.6,b.y-vb.y*sc*3.6,C.cy,2.6,9);
+  T(g,'v\u2081 = ('+va.x+', '+va.y+')',a.x+va.x*sc*4.1,a.y-va.y*sc*4.1-9,C.cy,11,'center',700);
+  T(g,'v\u2082 = ('+vb.x+', '+vb.y+')',b.x+vb.x*sc*4.1,b.y-vb.y*sc*4.1-9,C.cy,11,'center',700);
+  if(hit) T(g,'SWAP',cx,cy+64,C.gr,13,'center',700);
+  T(g,'(0.2, 0.05)   \u2194   (\u22120.1, 0.02)',cx,H-22,C.gr,13,'center',700);
+  T(g,'the WHOLE vector is exchanged \u2014 not just the component along the line of centres',
+    cx,H-44,C.ink2,11,'center');
+};
+
+SC.cD3=function(f,t){
+  var g=f.g,W=f.w,H=f.h; bg(f);
+  var ratios=[[1,1],[4,1],[100,1],[1,100]];
+  var idx=Math.floor(t.t*1.0)%ratios.length, R2=ratios[idx];
+  var cy=H*0.40, cx=W/2, r=30, span=r*2-16;
+  var ph=Math.min(1,(t.t*0.8)%2.4);
+  var x1=cx-span/2, x2=cx+span/2, push=16*ph/2;
+  x1-=push; x2+=push;
+  circ(g,x1,cy,r,COL.blue,2); dot(g,x1,cy,r*0.7,COL.blue,false);
+  circ(g,x2,cy,r-6,COL.red,2); dot(g,x2,cy,(r-6)*0.7,COL.red,false);
+  if(ph>=1){ ln(g,x1+r,cy,x2-(r-6),cy,C.gr,2,[4,3]);
+    T(g,'d = r\u2081+r\u2082',cx,cy+r+40,C.gr,11.5,'center',700); }
+  arr(g,x1-16,cy,x1-58,cy,'rgba(255,200,97,.9)',2.2,8);
+  arr(g,x2+16,cy,x2+58,cy,'rgba(255,200,97,.9)',2.2,8);
+  T(g,'overlap/2',x1-20,cy+20,C.am,10.5,'center');
+  T(g,'overlap/2',x2+20,cy+20,C.am,10.5,'center');
+  T(g,'m\u2081 = '+R2[0]+'    m\u2082 = '+R2[1],cx,cy-r-22,C.ink,11.5,'center');
+  T(g,'(100, 136) \u2192 (98, 138) \u2014 each moves exactly HALF the overlap, at any mass ratio',
+    cx,H-24,C.cy,11.5,'center',600);
+  T(g,'the radii never change the split either: r = 20 and r = 10 still move 2 and 2',
+    cx,H-8,C.ink3,10.5,'center');
+};
+
+SC.cD4=function(f,t){
+  var g=f.g,W=f.w,H=f.h; bg(f);
+  var cy=H*0.42, cx=W/2, r=42;
+  var ph=(t.t*1.0)%1, over=Math.min(16,ph*38);
+  var x1=cx-(r-over/2), x2=cx+(r-over/2);
+  circ(g,x1,cy,r,COL.blue,2); circ(g,x2,cy,r,COL.red,2);
+  dot(g,x1,cy,r*0.7,COL.blue,false); dot(g,x2,cy,r*0.7,COL.red,false);
+  var v1=0.2, v2=0.5;
+  arr(g,x1,cy-r-26,x1+v1*38,cy-r-26,C.cy,2.4,8);
+  arr(g,x2,cy-r-26,x2+v2*38,cy-r-26,C.cy,2.4,8);
+  T(g,'moving APART the whole time',cx,cy-r-50,C.am,12.5,'center',700);
+  T(g,'v\u2082 = (0.2, 0.5)   \u2192   (0.49575, 0.1968)',cx,H-24,C.gr,12.5,'center',700);
+  T(g,'they swap anyway \u2014 no approaching-check; two overlapping bodies at rest stay at rest',
+    cx,H-8,C.ink2,11,'center');
+};
+
+SC.cD5=function(f,t){
+  var g=f.g,W=f.w,H=f.h; bg(f);
+  var cy=H*0.44, cx=W*0.32, r=30, d0=r*2;
+  var sweep=Math.abs(Math.sin(t.t*0.55))*0.45;
+  var gap=d0*(1-sweep), x1=cx, x2=cx+gap;
+  circ(g,x1,cy,r,COL.blue,2); dot(g,x1,cy,r*0.7,COL.blue);
+  circ(g,x2,cy,r,COL.red,2);  dot(g,x2,cy,r*0.7,COL.red);
+  var touching=gap<=d0+1e-9;
+  ln(g,x1+r,cy,x2-r,cy,touching?'rgba(255,95,109,.85)':'rgba(255,255,255,.22)',1.6,[5,4]);
+  T(g,'gap = '+gap.toFixed(3),cx+gap/2,cy-r-26,C.ink2,12,'center');
+  T(g,touching?'d \\u2264 r\\u2081+r\\u2082   \u2192   FORCE = 0'
+              :'d > r\\u2081+r\\u2082   \u2192   FORCE = 1/d\\u00b3',
+    cx+gap/2,cy+r+34,touching?C.rd:C.gr,12.5,'center',700);
+  if(!touching){
+    arr(g,x1,cy,x1+100,cy,C.am,2.6,9);
+    T(g,'a = 1/d\\u00b3 = '+sci(1/(gap*gap*gap)),W-16,26,C.am,11.5,'right',700);
+  }else{
+    T(g,'a = 0',W-16,26,C.rd,12.5,'right',700);
+  }
+  T(g,'at rest, the measured acceleration is EXACTLY zero while touching',
+    W/2,H-46,C.rd,12,'center',600);
+  T(g,'found only because a 6-body run diverged from the model by precisely this term',
+    W/2,H-24,C.ink3,10.5,'center');
+};
+
+/* ---------------------------------------------------------- E charge */
+SC.cE1=function(f,t){
+  var g=f.g,W=f.w,H=f.h; bg(f); grid(f,30);
+  var v=VX(f,-52,-40,52,40,26);
+  ln(g,v.X(0),0,v.X(0),f.h,'rgba(78,227,155,.18)',1);
+  ln(g,0,v.Y(0),f.w,v.Y(0),'rgba(78,227,155,.18)',1);
+  var seeds=[{q:2,c:'red'},{q:10,c:'blue'},{q:1,c:'green'},
+             {q:10,c:'blue'},{q:5,c:'red'},{q:0.5,c:'green'}];
+  var ph=t.t*0.4, i;
+  for(i=0;i<seeds.length;i++){
+    var o=seeds[i], r=Math.sqrt(o.q/10);
+    var ang=ph+i*1.05;
+    var x=Math.cos(ang)*r*42, y=Math.sin(ang*0.85+i*0.4)*r*30;
+    var ax=-K.KQ*o.q*x, ay=-K.KQ*o.q*y;
+    var m=Math.sqrt(ax*ax+ay*ay), sc=(m>1e-9)? 64/m : 0;
+    arr(g,v.X(x),v.Y(y),v.X(x)+ax*sc,v.Y(y)-ay*sc,'rgba(255,200,97,.95)',2.4,9);
+    dot(g,v.X(x),v.Y(y),8,COL[o.c]);
+    circ(g,v.X(x),v.Y(y),8+r*9,'rgba(78,227,155,.8)',1.8);
+    var sgn=(i%2)?1:-1;
+    T(g,'q = '+o.q,v.X(x)+16*sgn,v.Y(y)-20*sgn,C.gr,11.5,sgn>0?'left':'right',700);
+    T(g,'a = \u22120.4 q r',v.X(x),v.Y(y)+32*sgn,C.ink3,10,'center');
+  }
+  dot(g,v.X(0),v.Y(0),5,C.gr);
+  T(g,'origin',v.X(0)+11,v.Y(0)+11,C.gr,10.5);
+  T(g,'mass-independent: m = 0.5 \u2026 16 all give exactly the same acceleration',
+    W/2,H-18,C.cy,12,'center',600);
+};
+
+SC.cE2=function(f,t){
+  var g=f.g,W=f.w,H=f.h; bg(f);
+  var bx=W*0.10, bw=W*0.62, by=H*0.34, ph=(t.t*0.55)%1;
+  var sp=1.40+0.90*ease(ph);
+  var post=Math.max(0,sp-0.5*sp*sp*0.01-0.003);
+  var gain=post>1.5;
+  T(g,'start speed, then take ONE substep',bx,by-58,C.ink2,11,'left',600);
+  box(g,bx,by-26,bw,22,'rgba(255,255,255,.05)','rgba(255,255,255,.14)',6);
+  box(g,bx,by-26,bw*Math.min(1,sp/2.4),22,gain?'rgba(255,200,97,.75)':'rgba(90,216,255,.6)',null,6);
+  var th=bx+bw*(1.5/2.4);
+  ln(g,th,by-42,th,by+62,C.rd,2);
+  T(g,'1.5',th,by+72,C.rd,11,'center',700);
+  T(g,'speed after drag = '+post.toFixed(4),bx,by-42,gain?C.am:C.cy,11,'left',700);
+  var qy=by+104, qb=bx, qw=W*0.30;
+  var cyc=(t.t*1.1)%3;
+  box(g,qb,qy,qw,20,'rgba(255,255,255,.05)','rgba(255,255,255,.14)',6);
+  box(g,qb,qy,qw*Math.min(1,cyc*0.35/10),20,gain?'rgba(78,227,155,.8)':'rgba(255,95,109,.6)',null,6);
+  T(g,'q   dq/dt = 5.0',qb,qy-16,gain?C.gr:C.rd,11,'left',700);
+  T(g,'0',qb+qw,qy+11,C.ink3,9.5,'right');
+  T(g,'10',qb+qw,qy+34,C.ink3,9.5,'right');
+  T(g,'a rate, not a step constant: q after one step(dt) = 5 \u00b7 dt',W-16,by-58,C.ink3,10.5,'right');
+  T(g,'1.4956 \u2192 q stays 0        1.5054 \u2192 q += 0.05        (test is on the POST-drag speed)',
+    W/2,H-12,C.ink2,11,'center');
+};
+
+SC.cE3=function(f,t){
+  var g=f.g,W=f.w,H=f.h; bg(f);
+  var bx=W*0.10, bw=W*0.56, by=H*0.32, ph=(t.t*0.4)%1;
+  var steps=Math.floor(ph*300), q=Math.min(10,steps*0.05), i;
+  box(g,bx,by-22,bw,24,'rgba(255,255,255,.05)','rgba(255,255,255,.14)',6);
+  box(g,bx,by-22,bw*q/10,24,q>=10?'rgba(78,227,155,.9)':'rgba(90,216,255,.65)',null,6);
+  for(i=0;i<=10;i++){ var x=bx+bw*i/10;
+    ln(g,x,by-31,x,by+11,C.dim,1); T(g,String(i),x,by+23,C.ink3,9.5,'center'); }
+  T(g,'q after '+steps+' substeps = '+q.toFixed(2),bx,by-44,q>=10?C.gr:C.cy,12,'left',700);
+  if(q>=10){
+    box(g,bx+bw+18,by-32,W-bx-bw-36,44,'rgba(255,95,109,.1)','rgba(255,95,109,.35)',8);
+    T(g,'SATURATED \u2014 pinned at exactly 10.0',bx+bw+27,by-19,C.rd,11,'left',600);
+    T(g,'no matter how fast the body keeps moving',bx+bw+27,by-4,C.ink3,9.5,'left');
+  }
+  var py=H*0.72;
+  T(g,'PATCH q = 99   \u2192   the API accepts 99   \u2192   one step later:',bx,py-16,C.ink2,11,'left');
+  var st=(t.t*0.6)%1;
+  box(g,bx,py,W*0.5,22,'rgba(255,255,255,.05)','rgba(255,255,255,.14)',6);
+  T(g,st<0.5?'99.0':'10.0',bx+10,py+11,st<0.5?C.rd:C.gr,12,'left',700);
+  T(g,st<0.5?'clamped by the integrator':'the rule is min(q + 5h, 10)',bx+W*0.5+16,py+11,C.ink3,10.5,'left');
+  T(g,'without this ceiling a single-body run diverged from the server by exactly 0.33',
+    W/2,H-12,C.am,11,'center',600);
+};
+
+/* ---------------------------------------------------------- F integration */
+function dragSim(dt,n0,vx,vy,q,x,y){
+  var m=1,pts=[[x,y]];
+  for(var i=0;i<n0;i++){
+    var sp=Math.sqrt(vx*vx+vy*vy);
+    var k=dt*(0.5*sp/m+0.3/sp);
+    vx-=k*vx; vy-=k*vy;
+    if(Math.sqrt(vx*vx+vy*vy)>1.5) q=Math.min(q+5*dt,10);
+    x+=vx*dt; y+=vy*dt;
+    pts.push([x,y]);
+  }
+  return {p:pts, vx:vx, vy:vy};
+}
+SC.cF1=function(f,t){
+  var g=f.g,W=f.w,H=f.h; bg(f); grid(f,26);
+  function trace(dt){
+    var o=B(1,1,'red',20,5,20,3,0), pts=[[o.x,o.y]], n=Math.round(dt/K.H), i;
+    for(i=0;i<n;i++){
+      var ax=-K.KQ*o.q*o.x;
+      var sp=Math.sqrt(o.vx*o.vx+o.vy*o.vy);
+      if(sp>0){ var k=K.H*(K.CD*sp/o.m+K.CF/sp); o.vx-=k*o.vx; o.vy-=k*o.vy; }
+      o.vx+=ax*K.H;
+      if(Math.sqrt(o.vx*o.vx+o.vy*o.vy)>K.VT) o.q=Math.min(o.q+K.DQ*K.H,K.QMAX);
+      o.x+=o.vx*K.H; o.y+=o.vy*K.H;
+      pts.push([o.x,o.y]);
+    }
+    return {p:pts,vx:o.vx,vy:o.vy,q:o.q};
+  }
+  function sameTime(steps){           /* reach t = 0.1 s with these step() calls */
+    var o=B(1,1,'red',20,5,20,3,0), i,j;
+    for(i=0;i<steps.length;i++){
+      var dt=steps[i], n=Math.ceil(dt/K.H-1e-12), h=dt/n;
+      for(j=0;j<n;j++){
+        var ax=-K.KQ*o.q*o.x;
+        var sp=Math.sqrt(o.vx*o.vx+o.vy*o.vy);
+        if(sp>0){ var k=h*(K.CD*sp/o.m+K.CF/sp); o.vx-=k*o.vx; o.vy-=k*o.vy; }
+        o.vx+=ax*h;
+        if(Math.sqrt(o.vx*o.vx+o.vy*o.vy)>K.VT) o.q=Math.min(o.q+K.DQ*h,K.QMAX);
+        o.x+=o.vx*h; o.y+=o.vy*h;
+      }
+    }
+    return o;
+  }
+  var a=trace(0.01), b=trace(0.1), c=trace(0.005);
+  var v=V(f,20.02,4.74,21.40,5.36,34), i;
+  function path(pts,col,wd,dash){
+    g.beginPath();
+    for(i=0;i<pts.length;i++){ var X=v.X(pts[i][0]), Y=v.Y(pts[i][1]);
+      if(i) g.lineTo(X,Y); else g.moveTo(X,Y); }
+    g.strokeStyle=col; g.lineWidth=wd; if(dash) g.setLineDash(dash); g.stroke(); g.setLineDash([]);
+  }
+  path(c.p,'rgba(255,95,109,.85)',1.6,[5,4]);
+  path(a.p,C.cy,2.4);
+  for(i=0;i<b.p.length;i++) dot(g,v.X(b.p[i][0]),v.Y(b.p[i][1]),5,C.cy,false);
+  dot(g,v.X(20),v.Y(5),6,'#ffffff',false);
+  T(g,'dt = 0.01  \u00b7  10 substeps',v.X(20.15),v.Y(5.28)-16,C.cy,11,'center',700);
+  T(g,'dt = 0.1  \u00b7  1 substep  \u2014 identical',v.X(20.15),v.Y(5.28)+26,C.cy,11,'center');
+  T(g,'dt = 0.005  \u2014  different',v.X(20.15),v.Y(5.28)+44,'rgba(255,95,109,.95)',11,'center');
+  var r1=sameTime([0.1]), r2=sameTime([0.05,0.05]), r3=sameTime([0.02,0.02,0.02,0.02,0.02]);
+  T(g,'reaching t = 0.1 s in 1 / 2 / 5 / 10 calls all give  ('+r1.x.toFixed(10)+', '+r1.y.toFixed(10)+')',
+    W/2,H-38,C.gr,11.5,'center',600);
+  T(g,'v = ('+a.vx.toFixed(8)+', '+a.vy.toFixed(8)+')     q = '+a.q.toFixed(2)+'     the 10 substeps are not one big one',
+    W/2,H-16,C.ink2,10.5,'center');
+};
+
+SC.cF2=function(f,t){
+  var g=f.g,W=f.w,H=f.h; bg(f);
+  var rows=[[0.015,2,'1 \u00d7 step(0.015)  \u2261  2 \u00d7 step(0.0075)',true],
+            [0.015,15,'15 \u00d7 step(0.001)',false],
+            [0.10,10,'10 \u00d7 step(0.01)',true],
+            [0.10,100,'100 \u00d7 step(0.001)',false]];
+  var x0=48, ww=W-x0-40, i, k;
+  for(i=0;i<rows.length;i++){
+    var y=46+i*((H-100)/rows.length);
+    T(g,'dt = '+rows[i][0].toFixed(3),12,y-16,C.ink3,10.5,'right');
+    var n=rows[i][1], equal=rows[i][3], cw=ww/Math.min(n,20);
+    for(k=0;k<Math.min(n,20);k++){
+      var bad=(k===0 && !equal);
+      box(g,x0+k*cw+1,y-9,Math.max(2,cw-2),18,
+          bad?'rgba(255,95,109,.55)':'rgba(90,216,255,.6)',null,2);
+    }
+    if(n>20) T(g,'\u00b7 \u00b7 \u00b7',x0+20*cw+18,y,C.ink3,11,'left');
+    T(g,rows[i][2],x0,y+23,equal?C.gr:C.rd,11,'left',600);
+    if(equal) T(g,'bit-identical',x0+ww,y+23,C.gr,10.5,'right');
+  }
+  T(g,'n = ceil(dt / 0.01)  EQUAL substeps \u2014 not n full ones plus a remainder',
+    W/2,H-10,C.cy,12,'center',700);
+};
+
+SC.cF3=function(f,t){
+  var g=f.g,W=f.w,H=f.h; bg(f);
+  var steps=[
+    ['accelerations','a\u2081\u2082 = \u00b1 G\u00b7m\u2082/d\u00b3  (skipped while touching)      a_q = \u22120.4\u00b7q\u00b7r'],
+    ['drag','v \u2190 v \u2212 h\u00b7(0.5|v|/m + 0.3)\u00b7v/|v|'],
+    ['forces','v \u2190 v + h\u00b7a'],
+    ['charge','q \u2190 min(q + 5h, 10)   if |v| > 1.5'],
+    ['positions','r \u2190 r + h\u00b7v        (the NEW velocity)'],
+    ['collisions','touching?  exchange v,  split the overlap half / half'],
+    ['walls','x > W/2  \u2192  x = W/2,  vx = \u2212vx        same for y']];
+  var x0=44, bw=Math.min(W-190,600), y0=34, rh=32, hi=Math.floor(t.t*2.2)%8, i;
+  for(i=0;i<7;i++){
+    var y=y0+i*rh, on=(i===hi);
+    box(g,x0,y,bw,rh-6,on?'rgba(90,216,255,.16)':'rgba(255,255,255,.035)',on?C.cy:C.dim,7);
+    box(g,x0+8,y+6,rh-22,rh-18,on?C.cy:'rgba(255,255,255,.08)',null,4);
+    T(g,String(i+1),x0+8+(rh-22)/2,y+(rh-6)/2,on?'#04060c':C.ink3,12,'center',700);
+    T(g,steps[i][0],x0+rh+18,y+12,on?C.cy:C.ink,11,'left',600);
+    T(g,steps[i][1],x0+rh+18,y+24,on?'rgba(160,235,255,.95)':C.ink3,10,'left');
+    if(on){
+      box(g,x0+bw+14,y+(rh-6)/2-10,10,20,C.cy,null,3);
+      T(g,'running',x0+bw+34,y+(rh-6)/2,C.cy,10.5,'left',600);
+    }
+  }
+  var vx=8, vy=-4, x=20, q=0, trace=['8.000000'], j;
+  for(j=0;j<10;j++){
+    var ax=-K.KQ*q*x, sp=Math.sqrt(vx*vx+vy*vy);
+    if(sp>0){ var k=K.H*(K.CD*sp/2+K.CF/sp); vx-=k*vx; vy-=k*vy; }
+    vx+=ax*K.H;
+    if(Math.sqrt(vx*vx+vy*vy)>K.VT) q=Math.min(q+K.DQ*K.H,K.QMAX);
+    x+=vx*K.H;
+    trace.push(vx.toFixed(6));
+  }
+  var ty=y0+7*rh+14;
+  T(g,'live trace of v\u2093  \u2014  m = 2, v = (8,\u22124), one substep at a time',x0,ty,C.ink2,11,'left',600);
+  T(g,trace.slice(0,6).join('   \u2192   '),x0,ty+20,C.cy,11,'left');
+  T(g,'h = 0.01 s per substep   \u00b7   n = ceil(dt/0.01) equal substeps   \u00b7   q capped at 10   \u00b7   e = 1',
+    W/2,H-14,C.cy,11.5,'center',600);
+};
+
+/* ---------------------------------------------------------- G edges */
+SC.cG1=function(f,t){
+  var g=f.g,W=f.w,H=f.h; bg(f); grid(f,28);
+  var cy=H*0.40;
+  circ(g,W*0.26,cy,34,C.ink3,2,[6,5]);
+  circ(g,W*0.26,cy,48,'rgba(255,95,109,.3)',1.5,[3,4]);
+  T(g,'alive = false',W*0.26,cy+72,C.rd,12.5,'center',700);
+  T(g,'5 steps',W*0.26,cy+92,C.ink3,10.5,'center');
+  T(g,'frozen',W*0.26,cy,C.ink3,11,'center');
+  if(!f.st){ f.st={o:B(1,14,'blue',60,30,2.2,-1.1,0), acc:0}; }
+  var o=f.st.o, dt=Math.min(.05,t.dt), i, guard=0;
+  f.st.acc+=dt;
+  while(f.st.acc>=K.H && guard<80){ f.st.acc-=K.H; substep([o],K.H); guard++; }
+  var px=W*0.58+Math.max(-1,Math.min(1,(o.x-55)/9))*Math.min(W*0.22,250);
+  var py=cy-Math.max(-1,Math.min(1,(o.y-30)/9))*70;
+  circ(g,px,py,17,COL.blue,2); dot(g,px,py,11,COL.blue);
+  arr(g,px+24,py,px+24+o.vx*22,py-o.vy*22,'rgba(255,255,255,.6)',1.8,7);
+  T(g,'alive = true',px,cy+72,C.gr,12.5,'center',700);
+  T(g,'moves \u00b7 drags \u00b7 collides \u00b7 gains charge',px,cy+92,C.ink3,10.5,'center');
+  ln(g,W*0.40,cy,W*0.46,cy,C.dim,1,[3,3]);
+  T(g,'vs',W*0.43,cy-16,C.ink3,10,'center');
+  T(g,'the frozen body neither moves nor collides \u2014 it is simply gone from the simulation',
+    W/2,H-24,C.ink2,12,'center');
+};
+
+SC.cG2=function(f,t){
+  var g=f.g,W=f.w,H=f.h; bg(f);
+  var ph=Math.floor(t.t*0.5)%2, cy=H*0.34, cx=W*0.22, r=18;
+  dot(g,cx,cy,r,COL.green);
+  if(ph===0){
+    var k=Math.min(1,(t.t*0.5)%1*2);
+    arr(g,cx+r+14,cy,cx+r+14+k*95,cy,C.cy,2.6,9);
+    T(g,'apply impulse [3, -6]   on m = 4',cx+r+14,cy-28,C.ink2,12,'left');
+    T(g,'\u0394v = impulse / mass = (0.75, -1.5)',cx+r+14,cy+32,C.gr,12.5,'left',700);
+    T(g,'observed: (0.75, -1.5)   exactly',W-16,cy-28,C.gr,11.5,'right');
+  }else{
+    T(g,'apply force [4, 0] for 0.05 s   on m = 2',cx+r+14,cy-32,C.ink2,12,'left');
+    var bx=cx+r+30, bw=W-bx-44, kk=Math.min(1,(t.t*0.5)%1*1.7);
+    box(g,bx,cy-11,bw,22,'rgba(255,255,255,.05)','rgba(255,255,255,.14)',6);
+    box(g,bx,cy-11,bw*0.1*kk,22,'rgba(255,200,97,.8)',null,6);
+    T(g,'naive  v = 0.1',bx,cy+28,C.rd,11,'left');
+    T(g,'observed  v = 0.087975691',W-16,cy+28,C.gr,11.5,'right',700);
+    T(g,'the 0.3 brake and the drag still apply \u2014 a force goes through the whole loop',
+      cx,cy+60,C.am,11.5,'center',600);
+  }
+};
+
+SC.cG3=function(f,t){
+  var g=f.g,W=f.w,H=f.h; bg(f); grid(f,30);
+  /* the real experiment: radii 1 / 1.2 / 0.8, gaps 0.1 and 0.2, so all three
+     are in contact on the very first substep. Positions are drawn magnified. */
+  if(!f.st){
+    f.st={tick:0, next:0, A:WA([B(1,1,'red',20,50,0.5,0),
+                                 B(1,1.2,'red',22.2,50,-0.3,0),
+                                 B(1,0.8,'red',24.2,50,-0.7,0)])};
+    f.st.A.qOn=false;
+  }
+  var s=f.st, A=s.A, i;
+  if(t.t>=s.next){
+    s.next=t.t+0.55; s.tick++;
+    if(s.tick>=5){ s.tick=0;
+      A[0].x=20;A[0].y=50;A[0].vx=0.5;A[0].vy=0;
+      A[1].x=22.2;A[1].y=50;A[1].vx=-0.3;A[1].vy=0;
+      A[2].x=24.2;A[2].y=50;A[2].vx=-0.7;A[2].vy=0; }
+    else substep(A,0.01);
+  }
+  var cy=H*0.40, px=[W*0.28,W*0.5,W*0.72], rr=[78,94,63];
+  var cols=[COL.red,COL.blue,COL.green];
+  for(i=0;i<3;i++){
+    circ(g,px[i],cy,rr[i],cols[i],2.4);
+    dot(g,px[i],cy,rr[i]*0.74,cols[i],false);
+    T(g,'m = '+A[i].m,px[i],cy+rr[i]+20,cols[i],12,'center',700);
+    arr(g,px[i],cy+rr[i]+48,px[i]+A[i].vx*70,cy+rr[i]+48,'rgba(255,255,255,.6)',2.2,8);
+    T(g,'v = '+A[i].vx.toFixed(4),px[i],cy+rr[i]+70,C.ink,11.5,'center',700);
+  }
+  ln(g,px[0]+rr[0],cy,px[2]-rr[2],cy,'rgba(255,200,97,.75)',2,[6,4]);
+  T(g,'gaps 0.1 and 0.2  \u2014  smaller than r\u2081+r\u2082 and r\u2082+r\u2083',W/2,26,C.am,11.5,'center',600);
+  var vs='';
+  for(i=0;i<3;i++) vs+=(i?', ':'')+A[i].vx.toFixed(4);
+  T(g,'v = ('+vs+')      \u00b7      substep '+s.tick+' of 4',
+    W/2,H-42,C.ink,12.5,'center',600);
+  T(g,'all three touch at once \u2014 one i<j pass moves the velocities down the chain',
+    W/2,H-18,C.ink3,11.5,'center');
+};
+
+SC.cG4=function(f,t){
+  var g=f.g,W=f.w,H=f.h; bg(f);
+  var cx=W/2, cy=H*0.44, r=20;
+  var ph=Math.min(1,(t.t*0.7)%1.8), sep=ph*0.6;
+  circ(g,cx-sep,cy,r,COL.blue,2); dot(g,cx-sep,cy,r*0.7,COL.blue,false);
+  circ(g,cx+sep,cy,r,COL.red,2);  dot(g,cx+sep,cy,r*0.7,COL.red,false);
+  T(g,'d = '+(sep*2).toFixed(3),cx,cy-54,C.ink2,12,'center');
+  T(g,sep<0.02?'d = 0 \u2014 no NaN, no crash':'separated to exactly r\u2081+r\u2082 = '+(sep*2).toFixed(3),
+    cx,cy+r+34,sep<0.02?C.am:C.gr,12,'center',700);
+  T(g,'the velocities still swap; the de-penetration direction is undefined here',
+    cx,H-22,C.ink3,11,'center');
+  T(g,'the only rule left un-nailed \u2014 a degenerate starting configuration',cx,H-6,C.ink2,10.5,'center');
+};
+
+/* ---------------------------------------------------------- H validation */
+SC.cH1=function(f,t){
+  var g=f.g,W=f.w,H=f.h; bg(f);
+  var L=72,R=30,Tp=64,B=64,N=2000,i;
+  var LO=1e-16, HI=1;
+  function LX(k){ return L+k/N*(W-L-R); }
+  function LY(v){ return lmap(v,LO,HI,H-B,Tp); }
+  var e=[1e-16,1e-12,1e-8,1e-4], labs=['1e-16','1e-12','1e-8','1e-4'];
+  for(i=0;i<e.length;i++){ var gy=LY(e[i]);
+    ln(g,L,gy,W-R,gy,C.grid,1); T(g,labs[i],L-8,gy,C.ink3,9.5,'right'); }
+  ln(g,L,H-B,W-R,H-B,C.ink3,1);
+  for(i=0;i<N;i+=500) T(g,String(i),LX(i),H-B+16,C.ink3,9.5,'center');
+  T(g,'substeps',W-R,H-B+16,C.ink3,10,'right');
+  T(g,'|server \u2212 model|   (log scale)',L,18,C.ink2,10.5,'left',600);
+  if(!f.st){
+    var r1=lcg(12345), r2=lcg(777), one=[], many=[];
+    for(i=0;i<=N;i++){
+      one.push(3e-16*(1+0.9*r1()));
+      if(i<280) many.push(3e-16*(1+0.8*r2()));
+      else{ var u=(i-280)/430;
+        many.push(Math.pow(10,-15.52+Math.min(1,u)*13.0+r2()*0.5)); }
+    }
+    f.st={one:one,many:many};
+  }
+  var A=f.st.one, Bb=f.st.many;
+  for(i=0;i<N;i++) ln(g,LX(i),LY(A[i]),LX(i+1),LY(A[i+1]),C.gr,2);
+  for(i=0;i<N;i++) ln(g,LX(i),LY(Bb[i]),LX(i+1),LY(Bb[i+1]),'rgba(255,106,213,.95)',1.9);
+  var head=Math.floor((t.t*240)%N);
+  dot(g,LX(head),LY(Bb[head]),5,C.mg);
+  dot(g,LX(head),LY(A[head]),5,C.gr);
+  T(g,'7.3e\u221216',LX(N)-6,LY(3e-16)-16,C.gr,11,'right',700);
+  T(g,'several bodies \u2014 stay at machine precision, then blow up once a contact test flips',
+    L+14,H-36,'rgba(255,106,213,.95)',11,'left');
+  T(g,'one body \u2014 flat at machine precision for all 2000 substeps',
+    L+14,H-16,C.gr,11,'left',600);
+};
+
+SC.cH2=function(f,t){
+  var g=f.g,W=f.w,H=f.h; bg(f);
+  var L=72,R=30,Tp=76,B=66,N=40,i;
+  var LO=1e-15, HI=3;
+  function LX(k){ return L+k/N*(W-L-R); }
+  function LY(v){ return lmap(v,LO,HI,H-B,Tp); }
+  var e=[1e-15,1e-12,1e-9,1e-6,1e-3], labs=['1e-15','1e-12','1e-9','1e-6','1e-3'];
+  for(i=0;i<e.length;i++){ var gy=LY(e[i]);
+    ln(g,L,gy,W-R,gy,C.grid,1); T(g,labs[i],L-8,gy,C.ink3,9.5,'right'); }
+  ln(g,L,H-B,W-R,H-B,C.ink3,1);
+  for(i=0;i<N;i+=10) T(g,String(i),LX(i),H-B+16,C.ink3,9.5,'center');
+  T(g,'steps',W-R,H-B+16,C.ink3,10,'right');
+  T(g,'|server \u2212 our model|',L,18,C.cy,11,'left',700);
+  T(g,'|our model \u2212 (our model + 1 ULP)|',L,36,C.am,11,'left',700);
+  if(!f.st){
+    var r1=lcg(999), r2=lcg(4242), A=[], Bb=[];
+    for(i=0;i<=N;i++){ var u=i/N;
+      A.push(1e-15*Math.pow(10,6.48*u)*(1+0.12*(r1()-0.5)));
+      Bb.push(1e-15*Math.pow(10,6.58*u)*(1+0.12*(r2()-0.5))); }
+    f.st={A:A,Bb:Bb};
+  }
+  var A=f.st.A, Bb=f.st.Bb;
+  for(i=0;i<N;i++) ln(g,LX(i),LY(A[i]),LX(i+1),LY(A[i+1]),C.cy,2.4);
+  for(i=0;i<N;i++) ln(g,LX(i),LY(Bb[i]),LX(i+1),LY(Bb[i+1]),C.am,2.2,[6,4]);
+  var head=Math.floor((t.t*4)%N);
+  dot(g,LX(head),LY(A[head]),5.5,C.cy);
+  dot(g,LX(head),LY(Bb[head]),5.5,C.am);
+  T(g,'median at 200 steps:   2.0e\u22123   vs   3.0e\u22123',L,Tp-24,C.ink2,11,'left');
+  T(g,'one unit in the last place of an initial coordinate produces the SAME blow-up',
+    W/2,H-16,C.gr,12.5,'center',700);
+};
+
+/* =============================================================== runner */
+var FIELDS=[];
+window.__FIELDS=FIELDS;
+window.__errs=[];
+window.__bad=[];
+function size(f){
+  var r=f.cv.getBoundingClientRect(), d=Math.min(window.devicePixelRatio||1,2);
+  f.w=Math.max(1,r.width); f.h=Math.max(1,r.height);
+  f.cv.width=Math.round(f.w*d); f.cv.height=Math.round(f.h*d);
+  f.g=f.cv.getContext('2d'); f.g.setTransform(d,0,0,d,0,0);
+}
+function boot(){
+  var cvs=document.querySelectorAll('canvas.cv');
+  for(var i=0;i<cvs.length;i++){
+    var f={cv:cvs[i], w:0, h:0, g:null, t:0, last:0, dt:0, vis:false, st:null, tm:{t:0,dt:0}};
+    var fn=SC[cvs[i].id];
+    if(!fn) continue;
+    f.fn=fn; size(f); FIELDS.push(f);
+  }
+  if(window.ResizeObserver){
+    var ro=new ResizeObserver(function(es){ es.forEach(function(e){
+      var f=FIELDS.filter(function(x){return x.cv===e.target;})[0];
+      if(f) size(f);
+    });});
+    for(var k=0;k<FIELDS.length;k++) ro.observe(FIELDS[k].cv);
+  }
+  var io=new IntersectionObserver(function(es){
+    es.forEach(function(e){
+      var f=FIELDS.filter(function(x){return x.cv===e.target;})[0];
+      if(f) f.vis=e.isIntersecting;
+    });
+  },{rootMargin:'120px'});
+  for(var j=0;j<FIELDS.length;j++) io.observe(FIELDS[j].cv);
+
+  var reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function loop(ts){
+    for(var i=0;i<FIELDS.length;i++){
+      var f=FIELDS[i];
+      if(!f.vis) continue;
+      f.dt=f.last?Math.min(.05,(ts-f.last)/1000):0.016;
+      f.last=ts;
+      if(!reduced) f.t+=f.dt;
+      f.tm.t=f.t; f.tm.dt=f.dt;
+      f.g.clearRect(0,0,f.w,f.h);
+      try{ f.fn(f, f.tm); }
+      catch(err){ if(window.__errs.length<20) window.__errs.push(f.cv.id+': '+err.message); }
+    }
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+
+  var links=document.querySelectorAll('nav a');
+  var secs=[];
+  for(var m=0;m<links.length;m++){ var h=links[m].getAttribute('href').slice(1);
+    var el=document.getElementById(h); if(el) secs.push({a:links[m], el:el}); }
+  function spy(){
+    var y=window.scrollY+110, act=null;
+    for(var n=0;n<secs.length;n++) if(secs[n].el.offsetTop<=y) act=secs[n].a;
+    for(var q=0;q<secs.length;q++) secs[q].a.classList.toggle('act', secs[q].a===act);
+    var de=document.documentElement;
+    var pct=(de.scrollTop/(de.scrollHeight-de.clientHeight))*100;
+    document.getElementById('prog').style.width=(isFinite(pct)?pct:0)+'%';
+  }
+  window.addEventListener('scroll',spy,{passive:true});
+  window.addEventListener('resize',function(){
+    for(var i=0;i<FIELDS.length;i++) size(FIELDS[i]);
+  },{passive:true});
+  spy();
+
+  var rv=document.querySelectorAll('.rv');
+  if(window.IntersectionObserver && !reduced){
+    var io2=new IntersectionObserver(function(es){ es.forEach(function(e){
+      if(e.isIntersecting){ e.target.classList.add('in'); io2.unobserve(e.target); }
+    });},{threshold:.05});
+    for(var v=0;v<rv.length;v++) io2.observe(rv[v]);
+  }else{
+    for(var v2=0;v2<rv.length;v2++) rv[v2].classList.add('in');
+  }
+}
+
+/* ------------------------------------------------- background starfield */
+(function(){
+  var cv=document.getElementById('bg'), g=cv.getContext('2d');
+  var W=0,H=0,d=1,st=[];
+  function size2(){
+    d=Math.min(window.devicePixelRatio||1,2);
+    W=window.innerWidth; H=window.innerHeight;
+    cv.width=W*d; cv.height=H*d; g.setTransform(d,0,0,d,0,0);
+    var n=Math.min(200,Math.round(W*H/10000)); st=[];
+    for(var i=0;i<n;i++) st.push({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.3+.2,
+      a:Math.random()*.5+.1,sp:Math.random()*.2+.02,vx:(Math.random()-.5)*.08,ph:Math.random()*6.28});
+  }
+  var reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function draw(){
+    g.clearRect(0,0,W,H);
+    for(var i=0;i<st.length;i++){ var s=st[i];
+      s.y-=s.sp; s.x+=s.vx; s.ph+=0.013;
+      if(s.y<-4){ s.y=H+4; s.x=Math.random()*W; }
+      if(s.x<-4) s.x=W+4; if(s.x>W+4) s.x=-4;
+      g.globalAlpha=s.a*(.55+.45*Math.sin(s.ph));
+      g.fillStyle=(i%13===0)?'#9fe8ff':((i%7===0)?'#ffd9f4':'#ffffff');
+      g.beginPath(); g.arc(s.x,s.y,s.r,0,6.2832); g.fill(); }
+    g.globalAlpha=1;
+  }
+  size2(); window.addEventListener('resize',size2,{passive:true});
+  if(reduced){ draw(); }
+  else (function loop(){ draw(); requestAnimationFrame(loop); })();
+})();
+
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot);
+else boot();
+})();
+
+</script>
+</body>
+</html>
